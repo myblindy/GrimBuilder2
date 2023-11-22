@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="GrimBuilder2.Views.SkillsControlView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GrimBuilder2.Views"
+    xmlns:helpers="using:GrimBuilder2.Helpers"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:GrimBuilder2.Core.Models"
+    mc:Ignorable="d">
+
+    <Grid>
+        <Image Source="{x:Bind Class.BitmapPath, Converter={StaticResource TexImageSourceConverter}, Mode=OneWay}" Stretch="None"
+               HorizontalAlignment="Left" Margin="25"/>
+
+        <!-- dependency lines -->
+        <ItemsControl ItemsSource="{x:Bind Class.Skills, Mode=OneWay}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:GdSkill">
+                    <Line X1="{x:Bind X}" Y1="{x:Bind Y}" X2="{x:Bind Dependency.X}" Y2="{x:Bind Dependency.Y}"
+                          Visibility="{x:Bind helpers:ViewBindingHelper.ToVisibility(Dependency)}"
+                          Stroke="DarkGray" StrokeThickness="3">
+                        <Line.RenderTransform>
+                            <TranslateTransform X="17" Y="17"/>
+                        </Line.RenderTransform>
+                    </Line>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- mastery icons -->
+        <ItemsControl ItemsSource="{x:Bind Class.Skills, Mode=OneWay}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:GdSkill">
+                    <StackPanel Orientation="Vertical">
+                        <StackPanel.RenderTransform>
+                            <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
+                        </StackPanel.RenderTransform>
+
+                        <Grid>
+                            <Grid.RenderTransform>
+                                <TranslateTransform X="-3" Y="-3"/>
+                            </Grid.RenderTransform>
+
+                            <!-- frame -->
+                            <Image Source="{x:Bind BitmapFrameUpPath, Converter={StaticResource TexImageSourceConverter}}"/>
+
+                            <!-- icon -->
+                            <Image Source="{x:Bind BitmapUpPath, Converter={StaticResource TexImageSourceConverter}}"
+                                   ToolTipService.ToolTip="{x:Bind Description}" Stretch="None"/>
+                        </Grid>
+                        <TextBlock>
+                            <Run Text="0 / "/><Run Text="{x:Bind MaximumLevel}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

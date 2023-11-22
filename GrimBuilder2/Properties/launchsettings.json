@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "GrimBuilder2 (Unpackaged)": {
+        "commandName": "Project"
+      },
+      "GrimBuilder2 (Package)": {
+        "commandName": "MsixPackage"
+      }
+    }
+}

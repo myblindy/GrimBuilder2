@@ -1,0 +1,42 @@
+﻿<Page
+    x:Class="GrimBuilder2.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:models="using:GrimBuilder2.Core.Models" xmlns:views="using:GrimBuilder2.Views"
+    mc:Ignorable="d" x:Name="RootPage">
+
+    <Grid x:Name="ContentArea">
+        <TabView IsAddTabButtonVisible="False">
+            <TabViewItem>
+                <TabViewItem.HeaderTemplate>
+                    <DataTemplate>
+                        <ComboBox ItemsSource="{Binding Path=ViewModel.Classes, ElementName=RootPage, Mode=OneWay}" 
+                                  SelectedItem="{Binding Path=ViewModel.Class1, ElementName=RootPage, Mode=TwoWay}"
+                                  DisplayMemberPath="Name"/>
+                    </DataTemplate>
+                </TabViewItem.HeaderTemplate>
+                <TabViewItem.ContentTemplate>
+                    <DataTemplate>
+                        <views:SkillsControlView Class="{Binding Path=ViewModel.Class1, ElementName=RootPage, Mode=OneWay}"/>
+                    </DataTemplate>
+                </TabViewItem.ContentTemplate>
+            </TabViewItem>
+            <TabViewItem>
+                <TabViewItem.HeaderTemplate>
+                    <DataTemplate>
+                        <ComboBox ItemsSource="{Binding Path=ViewModel.Classes, ElementName=RootPage, Mode=OneWay}" 
+                                  SelectedItem="{Binding Path=ViewModel.Class2, ElementName=RootPage, Mode=TwoWay}"
+                                  DisplayMemberPath="Name"/>
+                    </DataTemplate>
+                </TabViewItem.HeaderTemplate>
+                <TabViewItem.ContentTemplate>
+                    <DataTemplate>
+                        <views:SkillsControlView Class="{Binding Path=ViewModel.Class2, ElementName=RootPage, Mode=OneWay}"/>
+                    </DataTemplate>
+                </TabViewItem.ContentTemplate>
+            </TabViewItem>
+        </TabView>
+    </Grid>
+</Page>
