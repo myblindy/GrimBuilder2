@@ -94,4 +94,7 @@
   <data name="SettingsPage_PrivacyTermsLink.NavigateUri" xml:space="preserve">
     <value>https://YourPrivacyUrlGoesHere/</value>
   </data>
+  <data name="Shell_Devotions.Content" xml:space="preserve">
+    <value>Devotions</value>
+  </data>
 </root>

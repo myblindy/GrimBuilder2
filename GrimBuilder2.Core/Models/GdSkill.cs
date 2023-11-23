@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 namespace GrimBuilder2.Core.Models;
 public class GdSkill
 {
-    public required string Name { get; init; }
-    public required string Description { get; init; }
-    public required int Tier { get; init; }
-    public required int X { get; init; }
-    public required int Y { get; init; }
-    public required bool Circular { get; init; }
-    public required int MaximumLevel { get; init; }
-    public required int? UltimateLevel { get; init; }
-    public required int? MasteryLevelRequirement { get; init; }
+    public string Name { get; init; } = null!;
+    public string? Description { get; init; } = null!;
+    public int Tier { get; init; }
+    public int X { get; init; }
+    public int Y { get; init; }
+    public bool Circular { get; init; }
+    public int MaximumLevel { get; init; }
+    public int? UltimateLevel { get; init; }
+    public int? MasteryLevelRequirement { get; init; }
 
     public GdSkill? Dependency { get; internal set; }
 
-    public required string BitmapUpPath { get; init; }
-    public required string BitmapDownPath { get; init; }
+    public string? BitmapUpPath { get; init; } = null!;
+    public string? BitmapDownPath { get; init; } = null!;
 
-    public required string? BitmapFrameUpPath { get; init; }
-    public required string? BitmapFrameDownPath { get; init; }
-    public required string? BitmapFrameInFocusPath { get; init; }
+    public string? BitmapFrameUpPath { get; init; }
+    public string? BitmapFrameDownPath { get; init; }
+    public string? BitmapFrameInFocusPath { get; init; }
 }

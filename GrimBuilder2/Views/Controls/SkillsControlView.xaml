@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <UserControl
-    x:Class="GrimBuilder2.Views.SkillsControlView"
+    x:Class="GrimBuilder2.Views.Controls.SkillsControlView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:GrimBuilder2.Views"
@@ -58,7 +58,7 @@
 
                             <!-- icon -->
                             <Image Source="{x:Bind BitmapUpPath, Converter={StaticResource TexImageSourceConverter}}"
-                                   ToolTipService.ToolTip="{x:Bind Description}" Stretch="None"/>
+                                   helpers:GdToolTip.Skill="{x:Bind}" Stretch="None"/>
                         </Grid>
                         <TextBlock>
                             <Run Text="0 / "/><Run Text="{x:Bind MaximumLevel}"/>

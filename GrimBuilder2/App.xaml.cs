@@ -63,12 +63,14 @@ public partial class App : Application
                 services.AddSingleton<GdService>();
 
                 // Views and ViewModels
-                services.AddTransient<SettingsViewModel>();
-                services.AddTransient<SettingsPage>();
-                services.AddTransient<MainViewModel>();
-                services.AddTransient<MainPage>();
-                services.AddTransient<ShellPage>();
-                services.AddTransient<ShellViewModel>();
+                services.AddSingleton<SettingsViewModel>();
+                services.AddSingleton<SettingsPage>();
+                services.AddSingleton<MainViewModel>();
+                services.AddSingleton<MainPage>();
+                services.AddSingleton<ShellPage>();
+                services.AddSingleton<ShellViewModel>();
+                services.AddSingleton<DevotionsViewModel>();
+                services.AddSingleton<DevotionsPage>();
 
                 // Configuration
                 services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));

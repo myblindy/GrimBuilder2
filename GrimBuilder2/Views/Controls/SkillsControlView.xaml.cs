@@ -14,7 +14,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
-namespace GrimBuilder2.Views;
+namespace GrimBuilder2.Views.Controls;
 
 public sealed partial class SkillsControlView : UserControl
 {
@@ -29,6 +29,6 @@ public sealed partial class SkillsControlView : UserControl
 
     public SkillsControlView()
     {
-        this.InitializeComponent();
+        InitializeComponent();
     }
 }

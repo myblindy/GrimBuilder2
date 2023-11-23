@@ -11,6 +11,8 @@ public partial class MainViewModel : ObservableRecipient
     private readonly GdService gdService;
 
     public ObservableCollection<GdClass> Classes { get; } = [];
+    public ObservableCollection<GdConstellation> Constellations { get; } = [];
+    public ObservableCollection<GdNebula> Nebulas { get; } = [];
 
     [ObservableProperty]
     GdClass? class1, class2;
@@ -24,8 +26,15 @@ public partial class MainViewModel : ObservableRecipient
 
     async Task InitializeAsync()
     {
-        Classes.AddRange(await gdService.GetClassesAsync());
+        var (classes, devotions) = await TaskExtended.WhenAll(
+            gdService.GetClassesAsync(),
+            gdService.GetDevotionsAsync());
+
+        Classes.AddRange(classes);
         Class1 = Classes[0];
         Class2 = Classes[1];
+
+        Constellations.AddRange(devotions.constellations);
+        Nebulas.AddRange(devotions.nebulas);
     }
 }
