@@ -5,8 +5,6 @@ using GrimBuilder2.Helpers;
 using GrimBuilder2.Models;
 
 using Microsoft.Extensions.Options;
-
-using Windows.ApplicationModel;
 using Windows.Storage;
 
 namespace GrimBuilder2.Services;

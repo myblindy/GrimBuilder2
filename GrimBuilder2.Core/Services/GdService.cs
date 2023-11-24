@@ -1,13 +1,6 @@
 ﻿using GrimBuilder2.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace GrimBuilder2.Core.Services;
 
@@ -74,7 +67,6 @@ public class GdService(ArzParserService arz)
                             Tier = w.rawSkill.TryGetValue("skillTier", out var skillTierValue) ? skillTierValue.IntegerValueUnsafe : 0,
                             MaximumLevel = w.rawSkill["skillMaxLevel"].IntegerValueUnsafe,
                             UltimateLevel = w.rawSkill.TryGetValue("skillUltimateLevel", out var ultimateLevel) ? ultimateLevel.IntegerValueUnsafe : null,
-                            MasteryLevelRequirement = w.rawSkill.TryGetValue("skillMasteryLevelRequired", out var masteryLevelRequirement) ? masteryLevelRequirement.IntegerValueUnsafe : null,
 
                             BitmapUpPath = w.rawSkill["skillUpBitmapName"].StringValueUnsafe,
                             BitmapDownPath = w.rawSkill["skillDownBitmapName"].StringValueUnsafe,

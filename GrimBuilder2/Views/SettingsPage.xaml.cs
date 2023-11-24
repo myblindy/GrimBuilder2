@@ -1,7 +1,6 @@
 ﻿using GrimBuilder2.ViewModels;
 
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
 
 namespace GrimBuilder2.Views;
 

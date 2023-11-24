@@ -7,7 +7,8 @@
     xmlns:helpers="using:GrimBuilder2.Helpers"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:GrimBuilder2.Core.Models" 
+    xmlns:cmodels="using:GrimBuilder2.Core.Models" 
+    xmlns:models="using:GrimBuilder2.Models"
     mc:Ignorable="d">
 
     <Grid>
@@ -15,14 +16,14 @@
                HorizontalAlignment="Left" Margin="25"/>
 
         <!-- dependency lines -->
-        <ItemsControl ItemsSource="{x:Bind Class.Skills, Mode=OneWay}">
+        <ItemsControl ItemsSource="{x:Bind Class.AssignableSkills, Mode=OneWay}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="models:GdSkill">
+                <DataTemplate x:DataType="models:GdAssignableSkill">
                     <Line X1="{x:Bind X}" Y1="{x:Bind Y}" X2="{x:Bind Dependency.X}" Y2="{x:Bind Dependency.Y}"
                           Visibility="{x:Bind helpers:ViewBindingHelper.ToVisibility(Dependency)}"
                           Stroke="DarkGray" StrokeThickness="3">
@@ -35,14 +36,14 @@
         </ItemsControl>
 
         <!-- mastery icons -->
-        <ItemsControl ItemsSource="{x:Bind Class.Skills, Mode=OneWay}">
+        <ItemsControl ItemsSource="{x:Bind Class.AssignableSkills, Mode=OneWay}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="models:GdSkill">
+                <DataTemplate x:DataType="models:GdAssignableSkill">
                     <StackPanel Orientation="Vertical">
                         <StackPanel.RenderTransform>
                             <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
@@ -54,12 +55,12 @@
                             </Grid.RenderTransform>
 
                             <!-- frame -->
-                            <Image helpers:TexImage.Source="{x:Bind BitmapFrameUpPath}"/>
+                            <Image helpers:TexImage.Source="{x:Bind models:GdAssignableSkill.GetFrameTexName(IsDependencyValid, IsMasteryValid, Circular)}"/>
 
                             <!-- icon -->
-                            <Image helpers:TexImage.Source="{x:Bind BitmapUpPath}"
-                                   helpers:TexImage.GrayedOut="{x:Bind True}"
-                                   helpers:GdToolTip.Skill="{x:Bind}" Stretch="None">
+                            <Image helpers:TexImage.Source="{x:Bind BitmapUpPath}" Stretch="None"
+                                   helpers:TexImage.GrayedOut="{x:Bind helpers:ViewBindingHelper.ToNotBoolean(AssignedPoints)}"
+                                   helpers:GdToolTip.Skill="{x:Bind}">
                             </Image>
                         </Grid>
                         <TextBlock>

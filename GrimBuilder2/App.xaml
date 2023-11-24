@@ -1,7 +1,8 @@
 ﻿<Application
     x:Class="GrimBuilder2.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:helpers="using:GrimBuilder2.Helpers">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:helpers="using:GrimBuilder2.Helpers">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -9,8 +10,8 @@
                 <ResourceDictionary Source="/Styles/FontSizes.xaml" />
                 <ResourceDictionary Source="/Styles/Thickness.xaml" />
                 <ResourceDictionary Source="/Styles/TextBlock.xaml" />
-
                 <ResourceDictionary>
+                    <helpers:NotBoolConverter x:Key="NotBoolConverter"/>
                 </ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

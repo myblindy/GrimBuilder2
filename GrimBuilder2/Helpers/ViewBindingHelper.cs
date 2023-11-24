@@ -1,22 +1,29 @@
 ﻿using Microsoft.UI.Xaml;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.UI.Xaml.Data;
 
 namespace GrimBuilder2.Helpers;
 static class ViewBindingHelper
 {
-    public static Visibility ToVisibility(object? value)
+    public static bool ToBoolean(object? value)
     {
-        if (value is null) return Visibility.Collapsed;
-        if (value is bool b) return b ? Visibility.Visible : Visibility.Collapsed;
-        if (value is string s) return string.IsNullOrWhiteSpace(s) ? Visibility.Collapsed : Visibility.Visible;
-        if (value is int i) return i == 0 ? Visibility.Collapsed : Visibility.Visible;
-        if (value is double d) return d == 0 ? Visibility.Collapsed : Visibility.Visible;
+        if (value is null) return false;
+        if (value is bool b) return b;
+        if (value is string s) return !string.IsNullOrWhiteSpace(s);
+        if (value is int i) return i != 0;
+        if (value is double d) return d != 0;
 
-        return Visibility.Visible;
+        return true;
     }
+
+    public static bool ToNotBoolean(object? value) => !ToBoolean(value);
+
+    public static Visibility ToVisibility(object? value) => ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed;
+}
+
+class NotBoolConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language) =>
+        ViewBindingHelper.ToNotBoolean(value);
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
 }

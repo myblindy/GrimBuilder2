@@ -1,8 +1,9 @@
-﻿using GrimBuilder2.Activation;
+﻿using AutoMapper;
+using GrimBuilder2.Activation;
 using GrimBuilder2.Contracts.Services;
 using GrimBuilder2.Core.Contracts.Services;
+using GrimBuilder2.Core.Models;
 using GrimBuilder2.Core.Services;
-using GrimBuilder2.Helpers;
 using GrimBuilder2.Models;
 using GrimBuilder2.Services;
 using GrimBuilder2.ViewModels;
@@ -29,6 +30,13 @@ public partial class App : Application
 
     public static WindowEx MainWindow { get; } = new MainWindow();
     public static DispatcherQueue MainDispatcherQueue { get; } = DispatcherQueue.GetForCurrentThread();
+
+    public static readonly IMapper Mapper = new MapperConfiguration(cfg =>
+    {
+        cfg.CreateMap<GdSkill, GdAssignableSkill>();
+        cfg.CreateMap<GdClass, GdAssignableClass>()
+            .ForMember(nameof(GdAssignableClass.AssignableSkills), x => x.MapFrom(src => src.Skills));
+    }).CreateMapper();
 
     public static UIElement? AppTitlebar { get; set; }
 

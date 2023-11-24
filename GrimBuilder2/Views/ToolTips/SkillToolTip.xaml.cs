@@ -4,7 +4,6 @@ using GrimBuilder2.Core.Models;
 using Microsoft.UI.Xaml.Documents;
 using System.Text;
 using Microsoft.UI.Xaml.Media;
-using Windows.UI;
 using Microsoft.UI;
 
 namespace GrimBuilder2.Views.ToolTips;

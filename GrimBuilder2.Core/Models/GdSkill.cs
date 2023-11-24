@@ -1,30 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GrimBuilder2.Core.Models;
+﻿namespace GrimBuilder2.Core.Models;
 public class GdSkill
 {
-    public string Name { get; init; } = null!;
-    public string? Description { get; init; } = null!;
-    public int Tier { get; init; }
-    public int X { get; init; }
-    public int Y { get; init; }
-    public bool Circular { get; init; }
-    public int MaximumLevel { get; init; }
-    public int? UltimateLevel { get; init; }
-    public int? MasteryLevelRequirement { get; init; }
+    public string Name { get; set; } = null!;
+    public string? Description { get; set; } = null!;
+    public int Tier { get; set; }
+    public int X { get; set; }
+    public int Y { get; set; }
+    public bool Circular { get; set; }
+    public int MaximumLevel { get; set; }
+    public int? UltimateLevel { get; set; }
+
+    static readonly int[] masteryTiers = [0, 1, 5, 10, 15, 20, 25, 32, 40, 50];
+    public int? MasteryLevelRequirement => masteryTiers[Tier];
 
     public GdSkill? Dependency { get; internal set; }
 
-    public string? BitmapUpPath { get; init; } = null!;
-    public string? BitmapDownPath { get; init; } = null!;
+    public string? BitmapUpPath { get; set; } = null!;
+    public string? BitmapDownPath { get; set; } = null!;
 
-    public string? BitmapFrameUpPath { get; init; }
-    public string? BitmapFrameDownPath { get; init; }
-    public string? BitmapFrameInFocusPath { get; init; }
-
-    public bool True { get; } = true;
+    public string? BitmapFrameUpPath { get; set; }
+    public string? BitmapFrameDownPath { get; set; }
+    public string? BitmapFrameInFocusPath { get; set; }
 }

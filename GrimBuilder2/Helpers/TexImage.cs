@@ -3,14 +3,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Pfim;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GrimBuilder2.Helpers;
 
@@ -93,25 +87,19 @@ static class TexImage
                     if (grayed)
                     {
                         // RGBA -> Grayscale
-                        var buffer = new byte[dds.Height * dds.Width * 4];
-
                         unsafe
                         {
-                            fixed (byte* _src = ddsPixels)
-                            fixed (byte* _dst = buffer)
+                            fixed (byte* _pixels = ddsPixels)
                             {
-                                var src = _src;
-                                var dst = _dst;
-                                var dstEnd = dst + buffer.Length;
-                                for (; dst < dstEnd; src += 4, dst += 4)
+                                var pixels = _pixels;
+                                var pixelsEnd = pixels + ddsPixels.Length;
+                                for (; pixels < pixelsEnd; pixels += 4)
                                 {
-                                    var grayValue = (byte)(src[0] * 0.299 + src[1] * 0.587 + src[2] * 0.114);
-                                    dst[0] = dst[1] = dst[2] = grayValue;
-                                    dst[3] = src[3];
+                                    var grayValue = (byte)(pixels[0] * 0.299 + pixels[1] * 0.587 + pixels[2] * 0.114);
+                                    pixels[0] = pixels[1] = pixels[2] = grayValue;
                                 }
                             }
                         }
-                        ddsPixels = buffer;
                     }
 
                     return (ddsPixels, dds.Width, dds.Height);
