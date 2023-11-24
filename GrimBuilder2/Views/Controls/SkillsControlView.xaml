@@ -7,11 +7,11 @@
     xmlns:helpers="using:GrimBuilder2.Helpers"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:GrimBuilder2.Core.Models"
+    xmlns:models="using:GrimBuilder2.Core.Models" 
     mc:Ignorable="d">
 
     <Grid>
-        <Image Source="{x:Bind Class.BitmapPath, Converter={StaticResource TexImageSourceConverter}, Mode=OneWay}" Stretch="None"
+        <Image helpers:TexImage.Source="{x:Bind Class.BitmapPath, Mode=OneWay}" Stretch="None"
                HorizontalAlignment="Left" Margin="25"/>
 
         <!-- dependency lines -->
@@ -54,11 +54,13 @@
                             </Grid.RenderTransform>
 
                             <!-- frame -->
-                            <Image Source="{x:Bind BitmapFrameUpPath, Converter={StaticResource TexImageSourceConverter}}"/>
+                            <Image helpers:TexImage.Source="{x:Bind BitmapFrameUpPath}"/>
 
                             <!-- icon -->
-                            <Image Source="{x:Bind BitmapUpPath, Converter={StaticResource TexImageSourceConverter}}"
-                                   helpers:GdToolTip.Skill="{x:Bind}" Stretch="None"/>
+                            <Image helpers:TexImage.Source="{x:Bind BitmapUpPath}"
+                                   helpers:TexImage.GrayedOut="{x:Bind True}"
+                                   helpers:GdToolTip.Skill="{x:Bind}" Stretch="None">
+                            </Image>
                         </Grid>
                         <TextBlock>
                             <Run Text="0 / "/><Run Text="{x:Bind MaximumLevel}"/>

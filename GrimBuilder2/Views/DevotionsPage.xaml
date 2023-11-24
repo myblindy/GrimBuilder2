@@ -6,63 +6,66 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:models="using:GrimBuilder2.Core.Models"
     xmlns:helpers="using:GrimBuilder2.Helpers"
+    xmlns:ui="using:CommunityToolkit.WinUI.UI"
     mc:Ignorable="d" x:Name="RootPage">
 
-    <Grid>
-        <Grid.RenderTransform>
-            <MatrixTransform x:Name="MapMatrixTransform"/>
-        </Grid.RenderTransform>
+    <Grid ui:UIElementExtensions.ClipToBounds="true">
+        <Grid>
+            <Grid.RenderTransform>
+                <MatrixTransform x:Name="MapMatrixTransform"/>
+            </Grid.RenderTransform>
 
-        <ItemsControl ItemsSource="{x:Bind ViewModel.MainViewModel.Nebulas}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Canvas/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="models:GdNebula">
-                    <Image Source="{x:Bind BitmapPath, Converter={StaticResource TexImageSourceConverter}}">
-                        <Image.RenderTransform>
-                            <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
-                        </Image.RenderTransform>
-                    </Image>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <ItemsControl ItemsSource="{x:Bind ViewModel.MainViewModel.Constellations}" >
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Canvas/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="models:GdConstellation">
-                    <Canvas>
-                        <Image Source="{x:Bind BitmapPath, Converter={StaticResource TexImageSourceConverter}}">
+            <ItemsControl ItemsSource="{x:Bind ViewModel.MainViewModel.Nebulas}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:GdNebula">
+                        <Image helpers:TexImage.Source="{x:Bind BitmapPath}">
                             <Image.RenderTransform>
                                 <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
                             </Image.RenderTransform>
                         </Image>
-                        <ItemsControl ItemsSource="{x:Bind Skills}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <Canvas/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="models:GdSkill">
-                                    <Image Source="{x:Bind BitmapFrameUpPath, Converter={StaticResource TexImageSourceConverter}}"
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{x:Bind ViewModel.MainViewModel.Constellations}" >
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:GdConstellation">
+                        <Canvas>
+                            <Image helpers:TexImage.Source="{x:Bind BitmapPath}">
+                                <Image.RenderTransform>
+                                    <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
+                                </Image.RenderTransform>
+                            </Image>
+                            <ItemsControl ItemsSource="{x:Bind Skills}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <Canvas/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:GdSkill">
+                                        <Image helpers:TexImage.Source="{x:Bind BitmapFrameUpPath}"
                                            helpers:GdToolTip.Skill="{x:Bind}">
-                                        <Image.RenderTransform>
-                                            <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
-                                        </Image.RenderTransform>
-                                    </Image>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Canvas>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+                                            <Image.RenderTransform>
+                                                <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
+                                            </Image.RenderTransform>
+                                        </Image>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Canvas>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
     </Grid>
 </Page>

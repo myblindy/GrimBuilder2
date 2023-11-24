@@ -25,4 +25,6 @@ public class GdSkill
     public string? BitmapFrameUpPath { get; init; }
     public string? BitmapFrameDownPath { get; init; }
     public string? BitmapFrameInFocusPath { get; init; }
+
+    public bool True { get; } = true;
 }
