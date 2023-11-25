@@ -44,7 +44,8 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="models:GdAssignableSkill">
-                    <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Vertical" helpers:GdToolTip.Skill="{x:Bind}"
+                                PointerPressed="OnSkillPointerPressed">
                         <StackPanel.RenderTransform>
                             <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
                         </StackPanel.RenderTransform>
@@ -55,16 +56,15 @@
                             </Grid.RenderTransform>
 
                             <!-- frame -->
-                            <Image helpers:TexImage.Source="{x:Bind models:GdAssignableSkill.GetFrameTexName(IsDependencyValid, IsMasteryValid, Circular)}"/>
+                            <Image helpers:TexImage.Source="{x:Bind models:GdAssignableSkill.GetFrameTexName(IsDependencyValid, IsMasteryValid, Circular), Mode=OneWay}"/>
 
                             <!-- icon -->
-                            <Image helpers:TexImage.Source="{x:Bind BitmapUpPath}" Stretch="None"
-                                   helpers:TexImage.GrayedOut="{x:Bind helpers:ViewBindingHelper.ToNotBoolean(AssignedPoints)}"
-                                   helpers:GdToolTip.Skill="{x:Bind}">
+                            <Image helpers:TexImage.GrayedOut="{x:Bind helpers:ViewBindingHelper.ToNotBoolean(AssignedPoints), Mode=OneWay}"
+                                   helpers:TexImage.Source="{x:Bind BitmapUpPath}" Stretch="None">
                             </Image>
                         </Grid>
                         <TextBlock>
-                            <Run Text="0 / "/><Run Text="{x:Bind MaximumLevel}"/>
+                            <Run Text="{x:Bind AssignedPoints, Mode=OneWay}"/><Run Text=" / "/><Run Text="{x:Bind MaximumLevel}"/>
                         </TextBlock>
                     </StackPanel>
                 </DataTemplate>

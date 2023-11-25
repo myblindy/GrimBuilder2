@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:models="using:GrimBuilder2.Core.Models"
+    xmlns:cmodels="using:GrimBuilder2.Core.Models"
+    xmlns:models="using:GrimBuilder2.Models"
     xmlns:helpers="using:GrimBuilder2.Helpers"
     xmlns:ui="using:CommunityToolkit.WinUI.UI"
     mc:Ignorable="d" x:Name="RootPage">
@@ -22,7 +23,7 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="models:GdNebula">
+                    <DataTemplate x:DataType="cmodels:GdNebula">
                         <Image helpers:TexImage.Source="{x:Bind BitmapPath}">
                             <Image.RenderTransform>
                                 <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
@@ -38,31 +39,29 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate x:DataType="models:GdConstellation">
-                        <Canvas>
-                            <Image helpers:TexImage.Source="{x:Bind BitmapPath}">
-                                <Image.RenderTransform>
-                                    <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
-                                </Image.RenderTransform>
-                            </Image>
-                            <ItemsControl ItemsSource="{x:Bind Skills}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <Canvas/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="models:GdSkill">
-                                        <Image helpers:TexImage.Source="{x:Bind BitmapFrameUpPath}"
-                                           helpers:GdToolTip.Skill="{x:Bind}">
-                                            <Image.RenderTransform>
-                                                <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
-                                            </Image.RenderTransform>
-                                        </Image>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Canvas>
+                    <DataTemplate x:DataType="cmodels:GdConstellation">
+                        <Image helpers:TexImage.Source="{x:Bind BitmapPath}" Opacity="0.5">
+                            <Image.RenderTransform>
+                                <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
+                            </Image.RenderTransform>
+                        </Image>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <ItemsControl ItemsSource="{x:Bind ViewModel.MainViewModel.AssignableConstellationSkills}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:GdAssignableSkill">
+                        <Image helpers:TexImage.Source="{x:Bind BitmapFrameUpPath}"
+                               helpers:GdToolTip.Skill="{x:Bind}">
+                            <Image.RenderTransform>
+                                <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
+                            </Image.RenderTransform>
+                        </Image>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

@@ -2,6 +2,7 @@
 using GrimBuilder2.Core.Models;
 using K4os.Compression.LZ4;
 using Nito.AsyncEx;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.IO.MemoryMappedFiles;
@@ -14,6 +15,7 @@ namespace GrimBuilder2.Core.Services;
 public class ArzParserService
 {
     const string BasePath = @"D:\Program Files (x86)\Steam\steamapps\common\Grim Dawn";
+
     readonly Arz[] arzFiles;
     readonly Dictionary<string, string> tags = new(StringComparer.OrdinalIgnoreCase);
     readonly AsyncManualResetEvent readyEvent = new();
@@ -70,8 +72,7 @@ public class ArzParserService
         public required MemoryMappedFile File { get; init; }
         public List<string> Strings { get; } = [];
         public Dictionary<string, ArzRecord> Records { get; } = new(StringComparer.InvariantCultureIgnoreCase);
-        public List<(MemoryMappedFile file, MemoryMappedViewAccessor accessor)> ArcMappedFiles { get; } = [];
-        public Dictionary<string, Func<(string path, byte[] data)>> ArcFileReaders { get; } = new(StringComparer.InvariantCultureIgnoreCase);
+        public Dictionary<string, Func<Task<(string path, byte[] data)>>> ArcFileReaders { get; } = new(StringComparer.InvariantCultureIgnoreCase);
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
@@ -145,9 +146,9 @@ public class ArzParserService
         }
     }
 
-    void ParseTags()
+    async Task ParseTags()
     {
-        foreach (var (path, data) in GetFileData(new Regex(@"^tags.*\.txt$", RegexOptions.IgnoreCase)))
+        foreach (var (path, data) in await GetFileDataAsync(new Regex(@"^tags.*\.txt$", RegexOptions.IgnoreCase)).ConfigureAwait(false))
         {
             using var reader = new StreamReader(new MemoryStream(data));
             while (reader.ReadLine() is { } line)
@@ -157,6 +158,42 @@ public class ArzParserService
                     if (!tags.ContainsKey(key))
                         tags[key] = line[(eqIdx + 1)..];
                 }
+        }
+    }
+
+    static async Task<(string path, byte[] data)> CreateArcFileReader(string arc, ArcToc toc, ArcFilePart[] fileParts)
+    {
+        using var file = File.OpenHandle(arc, FileMode.Open, FileAccess.Read, FileShare.Read, FileOptions.Asynchronous);
+        if (toc.Type == 1 && toc.CompressedSize == toc.UncompressedSize)
+        {
+            var buffer = new byte[toc.UncompressedSize];
+            await RandomAccess.ReadAsync(file, buffer, toc.Offset).ConfigureAwait(false);
+            return (arc, buffer);
+        }
+        else
+        {
+            var fullUncompressedSize = fileParts.Sum(w => w.UncompressedSize);
+            var buffer = new byte[fullUncompressedSize];
+            var bufferWriteIndex = 0;
+
+            foreach (var filePart in fileParts)
+                if (filePart.UncompressedSize == filePart.CompressedSize)
+                {
+                    await RandomAccess.ReadAsync(file, buffer.AsMemory(bufferWriteIndex, filePart.UncompressedSize), filePart.Offset).ConfigureAwait(false);
+                    bufferWriteIndex += filePart.UncompressedSize;
+                }
+                else
+                {
+                    var compressedBuffer = ArrayPool<byte>.Shared.Rent(filePart.CompressedSize);
+                    await RandomAccess.ReadAsync(file, compressedBuffer.AsMemory(0, filePart.CompressedSize), filePart.Offset).ConfigureAwait(false);
+                    var decompressedSize = LZ4Codec.Decode(compressedBuffer.AsSpan(0, filePart.CompressedSize), buffer.AsSpan(bufferWriteIndex));
+                    ArrayPool<byte>.Shared.Return(compressedBuffer);
+                    Debug.Assert(decompressedSize == filePart.UncompressedSize);
+
+                    bufferWriteIndex += decompressedSize;
+                }
+
+            return (arc, buffer);
         }
     }
 
@@ -174,9 +211,8 @@ public class ArzParserService
                         // parse each arc file
                         unsafe
                         {
-                            var mmf = MemoryMappedFile.CreateFromFile(arc);
-                            var accessor = mmf.CreateViewAccessor();
-                            arz.ArcMappedFiles.Add((mmf, accessor));
+                            using var mmf = MemoryMappedFile.CreateFromFile(arc);
+                            using var accessor = mmf.CreateViewAccessor();
 
                             byte* ptr = default;
                             accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptr);
@@ -205,52 +241,19 @@ public class ArzParserService
                             }
 
                             // toc
-                            var tocs = new ArcToc*[fileCount];
-                            for (var i = 0; i < tocs.Length; ++i)
+                            for (var i = 0; i < fileCount; ++i)
                             {
-                                tocs[i] = (ArcToc*)ptr;
+                                var toc = *(ArcToc*)ptr;
                                 ptr += Unsafe.SizeOf<ArcToc>();
+
+                                var filePartValues = new ArcFilePart[toc.FilePartCount];
+                                for (var filePartIdx = 0; filePartIdx < toc.FilePartCount; ++filePartIdx)
+                                    filePartValues[filePartIdx] = *fileParts[toc.Index + filePartIdx];
+
+                                arz.ArcFileReaders[fileNames[i]] = () => CreateArcFileReader(arc, toc, filePartValues);
                             }
 
-                            for (var _i = 0; _i < fileCount; ++_i)
-                            {
-                                var index = _i;
-                                arz.ArcFileReaders[fileNames[index]] = () =>
-                                {
-                                    var toc = tocs[index];
-                                    if (toc->Type == 1 && toc->CompressedSize == toc->UncompressedSize)
-                                        return (fileNames[index], new ReadOnlySpan<byte>(originalPtr + toc->Offset, toc->UncompressedSize).ToArray());
-
-                                    var fullLength = 0;
-                                    for (var i = 0; i < toc->FilePartCount; ++i)
-                                    {
-                                        var filePart = (ArcFilePart*)(originalPtr + header->FilePartOffset + (i + toc->Index) * Unsafe.SizeOf<ArcFilePart>());
-                                        fullLength += filePart->UncompressedSize;
-                                    }
-
-                                    var buffer = new byte[fullLength];
-                                    var bufferIndex = 0;
-                                    for (var i = 0; i < toc->FilePartCount; ++i)
-                                    {
-                                        var filePart = (ArcFilePart*)(originalPtr + header->FilePartOffset + (i + toc->Index) * Unsafe.SizeOf<ArcFilePart>());
-
-                                        if (filePart->CompressedSize == filePart->UncompressedSize)
-                                        {
-                                            var span = new ReadOnlySpan<byte>(originalPtr + filePart->Offset, filePart->UncompressedSize);
-                                            span.CopyTo(buffer.AsSpan(bufferIndex));
-                                            bufferIndex += filePart->UncompressedSize;
-                                        }
-                                        else
-                                        {
-                                            var span = new ReadOnlySpan<byte>(originalPtr + filePart->Offset, filePart->CompressedSize);
-                                            var decompressedLength = LZ4Codec.Decode(span, buffer.AsSpan(bufferIndex));
-                                            Debug.Assert(decompressedLength == filePart->UncompressedSize);
-                                            bufferIndex += decompressedLength;
-                                        }
-                                    }
-                                    return (fileNames[index], buffer);
-                                };
-                            }
+                            accessor.SafeMemoryMappedViewHandle.ReleasePointer();
                         }
                     })
                     .Append(Task.Run(() =>
@@ -273,12 +276,12 @@ public class ArzParserService
                         }
                     }))))).ConfigureAwait(false);
 
-        ParseTags();
+        await ParseTags().ConfigureAwait(false);
 
         readyEvent.Set();
     }
 
-    public async Task EnsureLoadedAsync() => await readyEvent.WaitAsync();
+    public async ValueTask EnsureLoadedAsync() => await readyEvent.WaitAsync().ConfigureAwait(false);
 
     public DbrData? GetDbrData(string path)
     {
@@ -295,19 +298,19 @@ public class ArzParserService
         return keys.Select(key => GetDbrData(key)!).ToList();
     }
 
-    public (string path, byte[] data) GetFileData(string path)
+    public async Task<(string path, byte[] data)> GetFileDataAsync(string path)
     {
         foreach (var arz in arzFiles)
             if (arz.ArcFileReaders.TryGetValue(path, out var reader))
-                return reader();
+                return await reader().ConfigureAwait(false);
 
         return default;
     }
 
-    public IList<(string path, byte[] data)> GetFileData(Regex regex)
+    public async Task<IList<(string path, byte[] data)>> GetFileDataAsync(Regex regex)
     {
         var files = arzFiles.SelectMany(arz => arz.ArcFileReaders.Keys.Where(key => regex.IsMatch(key))).ToHashSet();
-        return files.Select(key => GetFileData(key)!).ToList();
+        return await Task.WhenAll(files.Select(key => GetFileDataAsync(key)!)).ConfigureAwait(false);
     }
 
     public string? GetTag(string tag) => tags.TryGetValue(tag, out var value) ? value : null;

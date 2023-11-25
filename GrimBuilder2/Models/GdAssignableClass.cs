@@ -1,18 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using GrimBuilder2.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ReactiveUI;
 
 namespace GrimBuilder2.Models;
 
 [INotifyPropertyChanged]
 public partial class GdAssignableClass : GdClass
 {
-    public GdAssignableSkill[] AssignableSkills { get; set; } = null!;
+    [ObservableProperty]
+    GdAssignableSkill[]? assignableSkills;
 
     [ObservableProperty]
-    int assignedMasteryPoints = 15;
+    GdAssignableSkill? masterySkill;
+
+    public GdAssignableClass() =>
+        this.WhenAnyValue(x => x.AssignableSkills).Subscribe(_ => MasterySkill = AssignableSkills?[0]);
 }

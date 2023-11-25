@@ -4,8 +4,6 @@ using GrimBuilder2.Core.Models;
 using GrimBuilder2.Core.Services;
 using GrimBuilder2.Models;
 using ReactiveUI;
-using System.Collections.ObjectModel;
-using Windows.Data.Xml.Dom;
 
 namespace GrimBuilder2.ViewModels;
 
@@ -13,9 +11,17 @@ public partial class MainViewModel : ObservableRecipient
 {
     private readonly GdService gdService;
 
-    public ObservableCollection<GdClass> Classes { get; } = [];
-    public ObservableCollection<GdConstellation> Constellations { get; } = [];
-    public ObservableCollection<GdNebula> Nebulas { get; } = [];
+    [ObservableProperty]
+    IEnumerable<GdClass>? classes;
+
+    [ObservableProperty]
+    IEnumerable<GdConstellation>? constellations;
+
+    [ObservableProperty]
+    IEnumerable<GdAssignableSkill>? assignableConstellationSkills;
+
+    [ObservableProperty]
+    IEnumerable<GdNebula>? nebulas;
 
     [ObservableProperty]
     GdClass? selectedRawClass1, selectedRawClass2;
@@ -31,7 +37,7 @@ public partial class MainViewModel : ObservableRecipient
         // hook up the active property logic in code
         if (assignableClass is not null)
         {
-            foreach (var thisSkill in assignableClass.AssignableSkills)
+            foreach (var thisSkill in assignableClass.AssignableSkills!)
             {
                 var dependencySkill = thisSkill.Dependency is null ? null : assignableClass.AssignableSkills!.First(x => x.Name == thisSkill.Dependency.Name);
                 if (dependencySkill is not null)
@@ -39,11 +45,12 @@ public partial class MainViewModel : ObservableRecipient
                     thisSkill.AssignableDependency = dependencySkill;
                     dependencySkill.WhenAnyValue(x => x.AssignedPoints).Subscribe(_ => setShouldBeActive());
                 }
-                assignableClass.WhenAnyValue(x => x.AssignedMasteryPoints).Subscribe(_ => setShouldBeActive());
+                assignableClass.WhenAnyValue(x => x.MasterySkill!.AssignedPoints).Subscribe(_ => setShouldBeActive());
 
                 void setShouldBeActive()
                 {
-                    thisSkill.IsMasteryValid = thisSkill.MasteryLevelRequirement <= assignableClass.AssignedMasteryPoints;
+                    thisSkill.IsMasteryValid = assignableClass.MasterySkill is null ? false
+                        : thisSkill.MasteryLevelRequirement <= assignableClass.MasterySkill.AssignedPoints;
                     thisSkill.IsDependencyValid = (dependencySkill is null || dependencySkill.AssignedPoints > 0);
                 }
             }
@@ -69,11 +76,13 @@ public partial class MainViewModel : ObservableRecipient
             gdService.GetClassesAsync(),
             gdService.GetDevotionsAsync());
 
-        Classes.AddRange(classes);
-        SelectedRawClass1 = Classes[0];
-        SelectedRawClass2 = Classes[1];
+        Classes = classes;
+        SelectedRawClass1 = Classes.First();
+        SelectedRawClass2 = Classes.Skip(1).First();
 
-        Constellations.AddRange(devotions.constellations);
-        Nebulas.AddRange(devotions.nebulas);
+        Constellations = devotions.constellations;
+        AssignableConstellationSkills = devotions.constellations.SelectMany(c => c.Skills)
+            .Select(App.Mapper.Map<GdAssignableSkill>);
+        Nebulas = devotions.nebulas;
     }
 }

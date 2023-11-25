@@ -8,14 +8,11 @@ namespace GrimBuilder2.Views;
 
 public sealed partial class DevotionsPage : Page
 {
-    public DevotionsViewModel ViewModel { get; }
+    public DevotionsViewModel ViewModel { get; } = App.GetService<DevotionsViewModel>();
 
     public DevotionsPage()
     {
-        ViewModel = App.GetService<DevotionsViewModel>();
         InitializeComponent();
-
-        PointerPressed += (s, e) => { };
     }
 
     Point lastDrag;
