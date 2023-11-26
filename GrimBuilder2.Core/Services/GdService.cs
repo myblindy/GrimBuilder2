@@ -1,4 +1,8 @@
-﻿using GrimBuilder2.Core.Models;
+﻿using GrimBuilder2.Core.Helpers;
+using GrimBuilder2.Core.Models;
+using GrimBuilder2.Core.Models.SavedFile;
+using System.Diagnostics;
+using System.Globalization;
 using System.Numerics;
 using System.Text.RegularExpressions;
 
@@ -153,6 +157,7 @@ public class GdService(ArzParserService arz)
             {
                 var backgroundDbr = constellation!.TryGetValue("constellationBackground", out var backgroundValue)
                     ? arz.GetDbrData(backgroundValue.StringValueUnsafe) : null;
+                var skillDependencyIndex = new Dictionary<GdSkill, int>();
                 var gdConstellation = new GdConstellation
                 {
                     Name = arz.GetTag(constellation["constellationDisplayTag"].StringValueUnsafe)!,
@@ -161,17 +166,24 @@ public class GdService(ArzParserService arz)
                     X = backgroundDbr?["bitmapPositionX"].IntegerValueUnsafe ?? 0,
                     Y = backgroundDbr?["bitmapPositionY"].IntegerValueUnsafe ?? 0,
                     Skills = constellation.Keys.Where(key => Regex.IsMatch(key, @"devotionButton\d+"))
-                        .Select(key => arz.GetDbrData(constellation[key].StringValueUnsafe)!)
-                        .Select(uiSkill => (uiSkill: uiSkill,
-                            rawSkill: NavigateSkillToLeafSkill(arz.GetDbrData(uiSkill["skillName"].StringValueUnsafe)!, out _, out _)))
-                        .Select(w => new GdSkill
+                        .Select(key => (uiSkill: arz.GetDbrData(constellation[key].StringValueUnsafe)!, index: int.Parse(Regex.Match(key, @"\d+$").ValueSpan, CultureInfo.InvariantCulture)))
+                        .Select(w => (w.uiSkill,
+                            linkIndex: constellation.TryGetValue($"devotionLinks{w.index}", out var linkIndex) ? linkIndex.IntegerValueUnsafe - 1 : -1,
+                            rawSkill: NavigateSkillToLeafSkill(arz.GetDbrData(w.uiSkill["skillName"].StringValueUnsafe)!, out _, out _)))
+                        .Select(w =>
                         {
-                            Name = arz.GetTag(w.rawSkill["skillDisplayName"].StringValueUnsafe)!,
-                            X = w.uiSkill["bitmapPositionX"].IntegerValueUnsafe,
-                            Y = w.uiSkill["bitmapPositionY"].IntegerValueUnsafe,
-                            BitmapFrameDownPath = w.uiSkill["bitmapNameDown"].StringValueUnsafe,
-                            BitmapFrameUpPath = w.uiSkill["bitmapNameUp"].StringValueUnsafe,
-                            BitmapFrameInFocusPath = w.uiSkill["bitmapNameInFocus"].StringValueUnsafe,
+                            var skill = new GdSkill
+                            {
+                                Name = arz.GetTag(w.rawSkill["skillDisplayName"].StringValueUnsafe)!,
+                                X = w.uiSkill["bitmapPositionX"].IntegerValueUnsafe,
+                                Y = w.uiSkill["bitmapPositionY"].IntegerValueUnsafe,
+                                BitmapFrameDownPath = w.uiSkill["bitmapNameDown"].StringValueUnsafe,
+                                BitmapFrameUpPath = w.uiSkill["bitmapNameUp"].StringValueUnsafe,
+                                BitmapFrameInFocusPath = w.uiSkill["bitmapNameInFocus"].StringValueUnsafe,
+                            };
+                            if (w.linkIndex >= 0)
+                                skillDependencyIndex.Add(skill, w.linkIndex);
+                            return skill;
                         })
                         .ToArray(),
                     RequiredAffinities = constellation.Keys.Where(key => Regex.IsMatch(key, @"affinityRequiredName\d+"))
@@ -185,6 +197,8 @@ public class GdService(ArzParserService arz)
                             constellation[$"{key[..^5]}{key[^1]}"].IntegerValueUnsafe))
                         .ToArray(),
                 };
+                foreach (var (skill, linkIndex) in skillDependencyIndex)
+                    skill.Dependency = gdConstellation.Skills[linkIndex];
                 return gdConstellation;
             })
             .ToList();
@@ -199,5 +213,114 @@ public class GdService(ArzParserService arz)
             .ToList();
 
         return (affinities, constellations, nebulas);
+    }
+
+    public GdsCharacter ParseSaveFile(string baseFolderPath)
+    {
+        using var reader = new BinaryReader(File.OpenRead(Path.Combine(baseFolderPath, "player.gdc")));
+
+        // encryption data
+        GdEncryptionState encState = new();
+        reader.ReadEncryptionKey(encState);
+
+        // block helpers
+        T readBlock<T>(int expectedId, Func<uint, T> action)
+        {
+            if (reader!.ReadEncUInt32(encState) != expectedId && expectedId != -1)
+                throw new InvalidOperationException();
+            var size = reader!.ReadEncUInt32(encState, false);
+            var end = reader!.BaseStream.Position + size;
+
+            var result = action(size);
+
+            if (reader!.BaseStream.Position != end) throw new InvalidOperationException();
+            if (reader!.ReadEncUInt32(encState, false) != 0) throw new InvalidOperationException();
+
+            return result;
+        }
+
+        void skipNextBlock(int expectedId = -1) => readBlock<byte>(expectedId, size =>
+        {
+            Span<byte> buffer = stackalloc byte[(int)size];
+            reader!.ReadEnc(encState, buffer);
+            return 0;
+        });
+
+        // header
+        var magic = reader.ReadEncInt32(encState);
+        Debug.Assert(magic == 0x58434447);
+
+        var version = reader.ReadEncInt32(encState);
+        Debug.Assert(version is 1 or 2);
+
+        var charName = reader.ReadEncWideString(encState);
+        var sex = reader.ReadEncUInt8(encState);
+        var classId = reader.ReadEncString(encState);
+        var (classIndex1, classIndex2) = Regex.Match(classId, @"(\d\d)(\d\d)$") is { Success: true } m2
+            ? (int.Parse(m2.Groups[1].Value, CultureInfo.InvariantCulture), int.Parse(m2.Groups[2].Value, CultureInfo.InvariantCulture))
+            : (int.Parse(Regex.Match(classId, @"\d+$").Value, CultureInfo.InvariantCulture), -1);
+        var level = reader.ReadEncInt32(encState);
+        var hc = reader.ReadEncUInt8(encState);
+        var expansion = version >= 2 ? reader.ReadEncUInt8(encState) : 0;
+
+        // more magic stuff
+        magic = reader.ReadEncInt32(encState, false);
+        Debug.Assert(magic == 0);
+
+        magic = reader.ReadEncInt32(encState);
+        Debug.Assert(magic is 6 or 7 or 8);
+
+        // uid
+        Span<byte> uid = stackalloc byte[16];
+        reader.ReadEnc(encState, uid);
+
+        // info
+        skipNextBlock(1);
+
+        // bio
+        skipNextBlock(2);
+
+        // inventory
+        var equippedItems = readBlock(3, _ =>
+        {
+            magic = reader.ReadEncInt32(encState);
+            Debug.Assert(magic == 4);
+
+            var flag = reader.ReadEncUInt8(encState);
+            if (flag != 0)
+            {
+                var sackCount = reader.ReadEncInt32(encState);
+                var focused = reader.ReadEncInt32(encState);
+                var selected = reader.ReadEncInt32(encState);
+
+                while (sackCount-- > 0)
+                {
+                    // read sack
+                    skipNextBlock();
+                }
+
+                var useAlternate = reader.ReadEncUInt8(encState);
+
+                // equipment
+                var items = new GdsItem[16];
+                for (int i = 0; i < 12; ++i)
+                    items[i] = reader.ReadItem(true, encState);
+
+                var alternate0 = reader.ReadEncUInt8(encState);
+                items[12] = reader.ReadItem(true,encState);
+                items[13] = reader.ReadItem(true, encState);
+
+                var alternate1 = reader.ReadEncUInt8(encState);
+                items[14] = reader.ReadItem(true,encState);
+                items[15] = reader.ReadItem(true, encState);
+
+                return items;
+            }
+
+            return default;
+        });
+
+        // build result
+        return new(charName, classIndex1, classIndex2, level);
     }
 }

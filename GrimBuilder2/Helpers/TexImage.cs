@@ -81,7 +81,7 @@ static class TexImage
                     if (grayed)
                         imageData.Mutate(x => x.Grayscale());
 
-                    var msImageData = new MemoryStream(dds.Width * dds.Height * 5);
+                    var msImageData = new MemoryStream(dds.Width * dds.Height * 3);
                     imageData.SaveAsPng(msImageData, new()
                     {
                         CompressionLevel = SixLabors.ImageSharp.Formats.Png.PngCompressionLevel.Level1,

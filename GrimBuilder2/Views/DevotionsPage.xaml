@@ -48,6 +48,28 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
+            
+            <!-- dependency lines -->
+            <ItemsControl ItemsSource="{x:Bind ViewModel.MainViewModel.AssignableConstellationSkills}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="models:GdAssignableSkill">
+                        <Line X1="{x:Bind X}" Y1="{x:Bind Y}" X2="{x:Bind Dependency.X}" Y2="{x:Bind Dependency.Y}"
+                              Visibility="{x:Bind helpers:ViewBindingHelper.ToVisibility(Dependency)}"
+                              Stroke="Red" StrokeThickness="3">
+                            <Line.RenderTransform>
+                                <TranslateTransform X="30" Y="30"/>
+                            </Line.RenderTransform>
+                        </Line>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            
+            <!-- skills -->
             <ItemsControl ItemsSource="{x:Bind ViewModel.MainViewModel.AssignableConstellationSkills}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

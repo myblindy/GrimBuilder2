@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using GrimBuilder2.Core.Helpers;
 using GrimBuilder2.Core.Models;
 using GrimBuilder2.Core.Services;
@@ -84,5 +85,14 @@ public partial class MainViewModel : ObservableRecipient
         AssignableConstellationSkills = devotions.constellations.SelectMany(c => c.Skills)
             .Select(App.Mapper.Map<GdAssignableSkill>);
         Nebulas = devotions.nebulas;
+    }
+
+    [RelayCommand]
+    async Task LoadSaveFile(string path)
+    {
+        // clear all the assigned points
+        SelectedRawClass1 = SelectedRawClass2 = null;
+        foreach (var assignableConstellationSkill in AssignableConstellationSkills!)
+            assignableConstellationSkill.AssignedPoints = 0;
     }
 }

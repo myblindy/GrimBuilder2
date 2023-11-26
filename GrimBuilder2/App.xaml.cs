@@ -85,6 +85,9 @@ public partial class App : Application
             })
             .Build();
 
+        var character = GetService<GdService>()
+            .ParseSaveFile(@"C:\Users\tweet\Documents\My Games\Grim Dawn\save\main\_JiUs Thighs");
+
         UnhandledException += App_UnhandledException;
     }
 
