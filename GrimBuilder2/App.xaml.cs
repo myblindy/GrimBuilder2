@@ -74,8 +74,8 @@ public partial class App : Application
                 services.AddSingleton<CommonViewModel>();
                 services.AddSingleton<SettingsViewModel>();
                 services.AddSingleton<SettingsPage>();
-                services.AddSingleton<MainViewModel>();
-                services.AddSingleton<MainPage>();
+                services.AddSingleton<MasteriesViewModel>();
+                services.AddSingleton<MasteriesPage>();
                 services.AddSingleton<ShellPage>();
                 services.AddSingleton<ShellViewModel>();
                 services.AddSingleton<DevotionsViewModel>();

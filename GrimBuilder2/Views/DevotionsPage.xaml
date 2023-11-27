@@ -48,27 +48,35 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            
+
             <!-- dependency lines -->
             <ItemsControl ItemsSource="{x:Bind ViewModel.CommonViewModel.AssignableConstellationSkills}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <Canvas/>
+                        <Canvas>
+                        </Canvas>
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="models:GdAssignableSkill">
-                        <Line X1="{x:Bind X}" Y1="{x:Bind Y}" X2="{x:Bind Dependency.X}" Y2="{x:Bind Dependency.Y}"
+                        <Line X1="{x:Bind helpers:ViewBindingHelper.GetNegativeCoordinateWorkaroundValue(X)}" 
+                              Y1="{x:Bind helpers:ViewBindingHelper.GetNegativeCoordinateWorkaroundValue(Y)}"
+                              X2="{x:Bind helpers:ViewBindingHelper.GetNegativeCoordinateWorkaroundValue(Dependency.X)}"
+                              Y2="{x:Bind helpers:ViewBindingHelper.GetNegativeCoordinateWorkaroundValue(Dependency.Y)}"
                               Visibility="{x:Bind helpers:ViewBindingHelper.ToVisibility(Dependency)}"
                               Stroke="Red" StrokeThickness="3">
                             <Line.RenderTransform>
-                                <TranslateTransform X="30" Y="30"/>
+                                <TransformGroup>
+                                    <TranslateTransform X="30" Y="30"/>
+                                    <TranslateTransform X="-10000"
+                                                        Y="-10000"/>
+                                </TransformGroup>
                             </Line.RenderTransform>
                         </Line>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            
+
             <!-- skills -->
             <ItemsControl ItemsSource="{x:Bind ViewModel.CommonViewModel.AssignableConstellationSkills}">
                 <ItemsControl.ItemsPanel>

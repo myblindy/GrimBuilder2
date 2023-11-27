@@ -78,12 +78,11 @@ public partial class CommonViewModel : ObservableRecipient
             gdService.GetDevotionsAsync());
 
         Classes = classes;
-        SelectedRawClass1 = Classes.First();
-        SelectedRawClass2 = Classes.Skip(1).First();
 
         Constellations = devotions.constellations;
         AssignableConstellationSkills = devotions.constellations.SelectMany(c => c.Skills)
-            .Select(App.Mapper.Map<GdAssignableSkill>);
+            .Select(App.Mapper.Map<GdAssignableSkill>)
+            .ToList();
         Nebulas = devotions.nebulas;
 
         await LoadSaveFile(@"C:\Users\tweet\Documents\My Games\Grim Dawn\save\main\_Red Hot JiU");

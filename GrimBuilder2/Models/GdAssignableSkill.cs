@@ -23,7 +23,6 @@ public partial class GdAssignableSkill : GdSkill
             (false, true, true) => "/skills/skillallocation/skills_buttonborderroundred01.tex",
             (false, true, false) => "/skills/skillallocation/skills_buttonborderred01.tex",
 
-            //_ => null
             (_, false, true) => "/skills/skillallocation/skills_buttonborderroundgrayout01.tex",
             (_, false, false) => "/skills/skillallocation/skills_buttonbordergrayout01.tex",
         };

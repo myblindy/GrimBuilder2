@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace GrimBuilder2.ViewModels;
 
-public partial class MainViewModel(CommonViewModel commonViewModel) : ObservableRecipient
+public partial class MasteriesViewModel(CommonViewModel commonViewModel) : ObservableRecipient
 {
     public CommonViewModel CommonViewModel => commonViewModel;
 }

@@ -16,7 +16,7 @@ public class DefaultActivationHandler(INavigationService navigationService) : Ac
 
     protected async override Task HandleInternalAsync(LaunchActivatedEventArgs args)
     {
-        navigationService.NavigateTo(typeof(MainViewModel).FullName!);
+        navigationService.NavigateTo(typeof(MasteriesViewModel).FullName!);
 
         await Task.CompletedTask;
     }
