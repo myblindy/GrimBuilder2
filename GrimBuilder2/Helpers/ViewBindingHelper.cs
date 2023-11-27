@@ -20,7 +20,7 @@ static class ViewBindingHelper
     public static Visibility ToVisibility(object? value) => ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed;
 }
 
-class NotBoolConverter : IValueConverter
+sealed class NotBoolConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language) =>
         ViewBindingHelper.ToNotBoolean(value);

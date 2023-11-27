@@ -1,10 +1,11 @@
 ﻿namespace GrimBuilder2.Core.Models;
 
-public class GdClass(string name, string bitmapPath)
+public class GdClass
 {
-    public GdClass() : this(null!, null!) { }
+    public GdClass() { }
 
-    public string Name { get; } = name;
-    public string BitmapPath { get; } = bitmapPath;
+    public string Name { get; set; } = null!;
+    public int Index { get; set; }
+    public string BitmapPath { get; set; } = null!;
     public List<GdSkill> Skills { get; } = [];
 }

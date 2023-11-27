@@ -2,7 +2,7 @@
 
 using GrimBuilder2.Contracts.Services;
 using GrimBuilder2.Views;
-
+using GrimBuilder2.Views.Controls;
 using Microsoft.UI.Xaml.Navigation;
 
 namespace GrimBuilder2.ViewModels;
@@ -10,20 +10,11 @@ namespace GrimBuilder2.ViewModels;
 public partial class ShellViewModel : ObservableRecipient
 {
     [ObservableProperty]
-    private bool isBackEnabled;
-
-    [ObservableProperty]
     private object? selected;
 
-    public INavigationService NavigationService
-    {
-        get;
-    }
+    public INavigationService NavigationService { get; }
 
-    public INavigationViewService NavigationViewService
-    {
-        get;
-    }
+    public INavigationViewService NavigationViewService { get; }
 
     public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService)
     {
@@ -32,20 +23,16 @@ public partial class ShellViewModel : ObservableRecipient
         NavigationViewService = navigationViewService;
     }
 
-    private void OnNavigated(object sender, NavigationEventArgs e)
+    private void OnNavigated(object? sender, CustomFrameViewNavigatedArgs e)
     {
-        IsBackEnabled = NavigationService.CanGoBack;
-
-        if (e.SourcePageType == typeof(SettingsPage))
+        if (e.Page is SettingsPage)
         {
             Selected = NavigationViewService.SettingsItem;
             return;
         }
 
-        var selectedItem = NavigationViewService.GetSelectedItem(e.SourcePageType);
+        var selectedItem = NavigationViewService.GetSelectedItem(e.GetType());
         if (selectedItem != null)
-        {
             Selected = selectedItem;
-        }
     }
 }

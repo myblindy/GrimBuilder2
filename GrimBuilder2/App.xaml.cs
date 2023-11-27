@@ -50,14 +50,14 @@ public partial class App : Application
             .ConfigureServices((context, services) =>
             {
                 // Default Activation Handler
-                services.AddTransient<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
+                services.AddSingleton<ActivationHandler<LaunchActivatedEventArgs>, DefaultActivationHandler>();
 
                 // Other Activation Handlers
 
                 // Services
                 services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
                 services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-                services.AddTransient<INavigationViewService, NavigationViewService>();
+                services.AddSingleton<INavigationViewService, NavigationViewService>();
 
                 services.AddSingleton<IActivationService, ActivationService>();
                 services.AddSingleton<IPageService, PageService>();
@@ -71,6 +71,7 @@ public partial class App : Application
                 services.AddSingleton<GdService>();
 
                 // Views and ViewModels
+                services.AddSingleton<CommonViewModel>();
                 services.AddSingleton<SettingsViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<MainViewModel>();
@@ -84,9 +85,6 @@ public partial class App : Application
                 services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
             })
             .Build();
-
-        var character = GetService<GdService>()
-            .ParseSaveFile(@"C:\Users\tweet\Documents\My Games\Grim Dawn\save\main\_JiUs Thighs");
 
         UnhandledException += App_UnhandledException;
     }

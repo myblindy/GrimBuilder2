@@ -1,5 +1,5 @@
 ﻿using GrimBuilder2.Contracts.Services;
-
+using GrimBuilder2.Views.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
@@ -13,10 +13,7 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
 
     private Page? _currentPage;
 
-    public DataTemplate? DefaultHeaderTemplate
-    {
-        get; set;
-    }
+    public DataTemplate? DefaultHeaderTemplate { get; set; }
 
     public object DefaultHeader
     {
@@ -66,11 +63,11 @@ public class NavigationViewHeaderBehavior : Behavior<NavigationView>
         navigationService.Navigated -= OnNavigated;
     }
 
-    private void OnNavigated(object sender, NavigationEventArgs e)
+    private void OnNavigated(object? sender, CustomFrameViewNavigatedArgs e)
     {
-        if (sender is Frame frame && frame.Content is Page page)
+        if (e.Page is not null)
         {
-            _currentPage = page;
+            _currentPage = e.Page;
 
             UpdateHeader();
             UpdateHeaderTemplate();

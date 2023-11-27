@@ -13,28 +13,28 @@
             <TabViewItem>
                 <TabViewItem.HeaderTemplate>
                     <DataTemplate>
-                        <ComboBox ItemsSource="{Binding Path=ViewModel.Classes, ElementName=RootPage, Mode=OneWay}" 
-                                  SelectedItem="{Binding Path=ViewModel.SelectedRawClass1, ElementName=RootPage, Mode=TwoWay}"
+                        <ComboBox ItemsSource="{Binding Path=ViewModel.CommonViewModel.Classes, ElementName=RootPage, Mode=OneWay}" 
+                                  SelectedItem="{Binding Path=ViewModel.CommonViewModel.SelectedRawClass1, ElementName=RootPage, Mode=TwoWay}"
                                   DisplayMemberPath="Name"/>
                     </DataTemplate>
                 </TabViewItem.HeaderTemplate>
                 <TabViewItem.ContentTemplate>
                     <DataTemplate>
-                        <controls:SkillsControlView Class="{Binding Path=ViewModel.SelectedAssignableClass1, ElementName=RootPage, Mode=OneWay}"/>
+                        <controls:SkillsControlView Class="{Binding Path=ViewModel.CommonViewModel.SelectedAssignableClass1, ElementName=RootPage, Mode=OneWay}"/>
                     </DataTemplate>
                 </TabViewItem.ContentTemplate>
             </TabViewItem>
             <TabViewItem>
                 <TabViewItem.HeaderTemplate>
                     <DataTemplate>
-                        <ComboBox ItemsSource="{Binding Path=ViewModel.Classes, ElementName=RootPage, Mode=OneWay}" 
-                                  SelectedItem="{Binding Path=ViewModel.SelectedRawClass2, ElementName=RootPage, Mode=TwoWay}"
+                        <ComboBox ItemsSource="{Binding Path=ViewModel.CommonViewModel.Classes, ElementName=RootPage, Mode=OneWay}" 
+                                  SelectedItem="{Binding Path=ViewModel.CommonViewModel.SelectedRawClass2, ElementName=RootPage, Mode=TwoWay}"
                                   DisplayMemberPath="Name"/>
                     </DataTemplate>
                 </TabViewItem.HeaderTemplate>
                 <TabViewItem.ContentTemplate>
                     <DataTemplate>
-                        <controls:SkillsControlView Class="{Binding Path=ViewModel.SelectedAssignableClass2, ElementName=RootPage, Mode=OneWay}"/>
+                        <controls:SkillsControlView Class="{Binding Path=ViewModel.CommonViewModel.SelectedAssignableClass2, ElementName=RootPage, Mode=OneWay}"/>
                     </DataTemplate>
                 </TabViewItem.ContentTemplate>
             </TabViewItem>

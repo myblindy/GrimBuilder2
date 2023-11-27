@@ -59,7 +59,8 @@
                             <Image helpers:TexImage.Source="{x:Bind models:GdAssignableSkill.GetFrameTexName(IsDependencyValid, IsMasteryValid, Circular), Mode=OneWay}"/>
 
                             <!-- icon -->
-                            <Image helpers:TexImage.GrayedOut="{x:Bind helpers:ViewBindingHelper.ToNotBoolean(AssignedPoints), Mode=OneWay}"
+                            <Image helpers:TexImage.GrayedOut="{x:Bind models:GdAssignableSkill.GetGrayedOut(IsDependencyValid, IsMasteryValid), Mode=OneWay}"
+                                   Opacity="{x:Bind models:GdAssignableSkill.GetOpacity(AssignedPoints), Mode=OneWay}"
                                    helpers:TexImage.Source="{x:Bind BitmapUpPath}" Stretch="None">
                             </Image>
                         </Grid>

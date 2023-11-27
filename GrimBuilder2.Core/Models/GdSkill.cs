@@ -2,6 +2,7 @@
 public class GdSkill
 {
     public string Name { get; set; } = null!;
+    public string InternalName { get; set; } = null!;
     public string? Description { get; set; } = null!;
     public int Tier { get; set; }
     public int X { get; set; }

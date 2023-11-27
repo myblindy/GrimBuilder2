@@ -8,11 +8,8 @@ namespace GrimBuilder2.Models;
 public partial class GdAssignableClass : GdClass
 {
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MasterySkill))]
     GdAssignableSkill[]? assignableSkills;
 
-    [ObservableProperty]
-    GdAssignableSkill? masterySkill;
-
-    public GdAssignableClass() =>
-        this.WhenAnyValue(x => x.AssignableSkills).Subscribe(_ => MasterySkill = AssignableSkills?[0]);
+    public GdAssignableSkill? MasterySkill => AssignableSkills?[0];
 }

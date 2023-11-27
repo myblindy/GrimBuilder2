@@ -52,21 +52,26 @@ public class GdService(ArzParserService arz)
                 var uiSkills = master["tabSkillButtons"].StringValues!.Select(arz.GetDbrData).ToList();
                 var rawSkills = uiSkills.Select(uiSkill => arz.GetDbrData(uiSkill!["skillName"].StringValueUnsafe)).ToList();
 
-                GdClass @class = new(name,
-                    arz.GetDbrData(master["skillPaneMasteryBitmap"].StringValueUnsafe)!["bitmapName"].StringValueUnsafe);
+                GdClass @class = new()
+                {
+                    Name = name,
+                    Index = int.Parse(Regex.Match(rawSkills[0]!.Path, @"\d+").Value, CultureInfo.InvariantCulture),
+                    BitmapPath = arz.GetDbrData(master["skillPaneMasteryBitmap"].StringValueUnsafe)!["bitmapName"].StringValueUnsafe.Replace("ui/", "/")
+                };
 
                 var skillConnectors = new Dictionary<GdSkill, List<GdSkillConnectorTypes>>();
                 @class.Skills.AddRange(rawSkills.Zip(uiSkills, (rawSkill, uiSkill) => (rawSkill, uiSkill))
                     .Select(w =>
                     {
                         var leafSkill = NavigateSkillToLeafSkill(w.rawSkill!, out var isPetSkill, out var isBuffSkill);
-                        return (rawSkill: leafSkill, isPetSkill, isBuffSkill, uiSkill: w.uiSkill!);
+                        return (originalRawSkill: w.rawSkill!, rawSkill: leafSkill, isPetSkill, isBuffSkill, uiSkill: w.uiSkill!);
                     })
-                    .Select(w =>
+                    .Select((w, index) =>
                     {
                         var skill = new GdSkill
                         {
                             Name = arz.GetTag(w.rawSkill["skillDisplayName"].StringValueUnsafe)!,
+                            InternalName = w.originalRawSkill.Path,
                             Description = arz.GetTag(w.rawSkill["skillBaseDescription"].StringValueUnsafe)!,
                             Tier = w.rawSkill.TryGetValue("skillTier", out var skillTierValue) ? skillTierValue.IntegerValueUnsafe : 0,
                             MaximumLevel = w.rawSkill["skillMaxLevel"].IntegerValueUnsafe,
@@ -167,14 +172,19 @@ public class GdService(ArzParserService arz)
                     Y = backgroundDbr?["bitmapPositionY"].IntegerValueUnsafe ?? 0,
                     Skills = constellation.Keys.Where(key => Regex.IsMatch(key, @"devotionButton\d+"))
                         .Select(key => (uiSkill: arz.GetDbrData(constellation[key].StringValueUnsafe)!, index: int.Parse(Regex.Match(key, @"\d+$").ValueSpan, CultureInfo.InvariantCulture)))
-                        .Select(w => (w.uiSkill,
-                            linkIndex: constellation.TryGetValue($"devotionLinks{w.index}", out var linkIndex) ? linkIndex.IntegerValueUnsafe - 1 : -1,
-                            rawSkill: NavigateSkillToLeafSkill(arz.GetDbrData(w.uiSkill["skillName"].StringValueUnsafe)!, out _, out _)))
+                        .Select(w =>
+                        {
+                            var rawSkill = arz.GetDbrData(w.uiSkill["skillName"].StringValueUnsafe)!;
+                            return (w.uiSkill, originalRawSkill: rawSkill,
+                                linkIndex: constellation.TryGetValue($"devotionLinks{w.index}", out var linkIndex) ? linkIndex.IntegerValueUnsafe - 1 : -1,
+                                rawSkill: NavigateSkillToLeafSkill(rawSkill, out _, out _));
+                        })
                         .Select(w =>
                         {
                             var skill = new GdSkill
                             {
                                 Name = arz.GetTag(w.rawSkill["skillDisplayName"].StringValueUnsafe)!,
+                                InternalName = w.originalRawSkill.Path,
                                 X = w.uiSkill["bitmapPositionX"].IntegerValueUnsafe,
                                 Y = w.uiSkill["bitmapPositionY"].IntegerValueUnsafe,
                                 BitmapFrameDownPath = w.uiSkill["bitmapNameDown"].StringValueUnsafe,
@@ -295,7 +305,7 @@ public class GdService(ArzParserService arz)
 
                 while (sackCount-- > 0)
                 {
-                    // read sack
+                    // sack data
                     skipNextBlock();
                 }
 
@@ -307,11 +317,11 @@ public class GdService(ArzParserService arz)
                     items[i] = reader.ReadItem(true, encState);
 
                 var alternate0 = reader.ReadEncUInt8(encState);
-                items[12] = reader.ReadItem(true,encState);
+                items[12] = reader.ReadItem(true, encState);
                 items[13] = reader.ReadItem(true, encState);
 
                 var alternate1 = reader.ReadEncUInt8(encState);
-                items[14] = reader.ReadItem(true,encState);
+                items[14] = reader.ReadItem(true, encState);
                 items[15] = reader.ReadItem(true, encState);
 
                 return items;
@@ -320,7 +330,73 @@ public class GdService(ArzParserService arz)
             return default;
         });
 
+        // stash
+        _ = readBlock(4, _ =>
+        {
+            var version = reader.ReadEncInt32(encState);
+            Debug.Assert(version is 5 or 6);
+
+            var pageCount = version >= 6 ? reader.ReadEncInt32(encState) : 1;
+
+            while (pageCount-- > 0)
+                skipNextBlock();
+
+            return 0;
+        });
+
+        // respawns
+        skipNextBlock(5);
+
+        // teleports
+        skipNextBlock(6);
+
+        // markers
+        skipNextBlock(7);
+
+        // shrines
+        skipNextBlock(17);
+
+        // skills
+        var skills = readBlock(8, _ =>
+        {
+            version = reader.ReadEncInt32(encState);
+            Debug.Assert(version == 5);
+
+            var skills = reader.ReadEncArray(encState, () =>
+            {
+                var name = reader.ReadEncString(encState);
+                var level = reader.ReadEncInt32(encState);
+                var enabled = reader.ReadEncUInt8(encState);
+                var devotionLevel = reader.ReadEncInt32(encState);
+                var experience = reader.ReadEncInt32(encState);
+                var active = reader.ReadEncUInt32(encState);
+                reader.ReadEncUInt8(encState);
+                reader.ReadEncUInt8(encState);
+                var autoCastSkill = reader.ReadEncString(encState);
+                var autoCastController = reader.ReadEncString(encState);
+
+                return new GdsSkill(name, level, enabled != 0, devotionLevel);
+            });
+            var masteriesAllowed = reader.ReadEncInt32(encState);
+            var skillReclamationPointsUsed = reader.ReadEncInt32(encState);
+            var devotionReclamationPointsUsed = reader.ReadEncInt32(encState);
+            var charItemSkills = reader.ReadEncArray(encState, () =>
+            {
+                var name = reader.ReadEncString(encState);
+                var autoCastSkill = reader.ReadEncString(encState);
+                var autoCastController = reader.ReadEncString(encState);
+                var itemSlot = reader.ReadEncInt32(encState);
+                var itemId = reader.ReadEncInt32(encState);
+
+                return (name, autoCastSkill, autoCastController, itemSlot, itemId);
+            });
+
+            return skills;
+        });
+
+        // don't care about the rest
+
         // build result
-        return new(charName, classIndex1, classIndex2, level);
+        return new(charName, classIndex1, classIndex2, skills);
     }
 }

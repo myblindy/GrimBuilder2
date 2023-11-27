@@ -1,6 +1,4 @@
-﻿using System.Buffers.Binary;
-using System.Numerics;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace GrimBuilder2.Core.Helpers;
@@ -60,6 +58,14 @@ public static class GdStreamExtensions
     {
         foreach (ref var b in buffer)
             b = ReadEncUInt8(binaryReader, state);
+    }
+
+    public static T[] ReadEncArray<T>(this BinaryReader binaryReader, GdEncryptionState state, Func<T> entryReader)
+    {
+        var result = new T[binaryReader.ReadEncInt32(state)];
+        for (int i = 0; i < result.Length; ++i)
+            result[i] = entryReader();
+        return result;
     }
 }
 
