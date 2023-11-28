@@ -3,4 +3,5 @@
 public interface IPageService
 {
     Type GetPageType(string key);
+    IEnumerable<Type> EnumeratePageTypes();
 }

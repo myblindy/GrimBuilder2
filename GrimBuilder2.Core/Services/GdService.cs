@@ -39,7 +39,7 @@ public class GdService(ArzParserService arz)
     [Flags]
     enum GdSkillConnectorTypes { None, Forward = 1, Up = 2, Down = 4 }
 
-    public async Task<IEnumerable<GdClass>> GetClassesAsync()
+    public async Task<IList<GdClass>> GetClassesAsync()
     {
         await arz.EnsureLoadedAsync();
 
@@ -142,7 +142,7 @@ public class GdService(ArzParserService arz)
         return result;
     }
 
-    public async Task<(IEnumerable<GdAffinity> affinities, IEnumerable<GdConstellation> constellations, IEnumerable<GdNebula> nebulas)> GetDevotionsAsync()
+    public async Task<(IList<GdAffinity> affinities, IList<GdConstellation> constellations, IList<GdNebula> nebulas)> GetDevotionsAsync()
     {
         await arz.EnsureLoadedAsync();
 
@@ -223,6 +223,28 @@ public class GdService(ArzParserService arz)
             .ToList();
 
         return (affinities, constellations, nebulas);
+    }
+
+    public async Task<IList<GdEquipSlot>> GetEquipSlotsAsync()
+    {
+        await arz.EnsureLoadedAsync();
+
+        var master = arz.GetDbrData("records/ui/character/character_mastertable.dbr")!;
+        var equipSlots = Enum.GetValues<EquipSlotType>().Select(type =>
+        {
+            var parser = arz.GetDbrData(master[$"equip{type}"].StringValueUnsafe)!;
+            return new GdEquipSlot
+            {
+                Type = type,
+                X = parser["itemX"].IntegerValueUnsafe,
+                Y = parser["itemY"].IntegerValueUnsafe,
+                Width = parser["itemXSize"].IntegerValueUnsafe,
+                Height = parser["itemYSize"].IntegerValueUnsafe,
+                SilhouetteBitmapPath = parser["silhouette"].StringValueUnsafe,
+            };
+        }).ToArray();
+
+        return equipSlots;
     }
 
     public GdsCharacter ParseSaveFile(string baseFolderPath)

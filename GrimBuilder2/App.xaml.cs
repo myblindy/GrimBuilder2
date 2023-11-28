@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+
 using GrimBuilder2.Activation;
 using GrimBuilder2.Contracts.Services;
 using GrimBuilder2.Core.Contracts.Services;
@@ -22,7 +23,7 @@ public partial class App : Application
 
     public static T GetService<T>() where T : class
     {
-        if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
+        if ((Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
             throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
 
         return service;
@@ -36,6 +37,7 @@ public partial class App : Application
         cfg.CreateMap<GdSkill, GdAssignableSkill>();
         cfg.CreateMap<GdClass, GdAssignableClass>()
             .ForMember(nameof(GdAssignableClass.AssignableSkills), x => x.MapFrom(src => src.Skills));
+        cfg.CreateMap<GdEquipSlot, GdAssignableEquipSlot>();
     }).CreateMapper();
 
     public static UIElement? AppTitlebar { get; set; }
@@ -80,6 +82,8 @@ public partial class App : Application
                 services.AddSingleton<ShellViewModel>();
                 services.AddSingleton<DevotionsViewModel>();
                 services.AddSingleton<DevotionsPage>();
+                services.AddTransient<ItemsViewModel>();
+                services.AddTransient<ItemsPage>();
 
                 // Configuration
                 services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
@@ -99,6 +103,6 @@ public partial class App : Application
     {
         base.OnLaunched(args);
 
-        await App.GetService<IActivationService>().ActivateAsync(args);
+        await GetService<IActivationService>().ActivateAsync(args);
     }
 }

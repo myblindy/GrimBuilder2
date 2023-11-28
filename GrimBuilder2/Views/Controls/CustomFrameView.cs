@@ -1,4 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using GrimBuilder2.Contracts.Services;
+using GrimBuilder2.Core.Helpers;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.ComponentModel;
 
@@ -25,15 +28,21 @@ public partial class CustomFrameView : Grid
     public INotifyPropertyChanged? CurrentPageViewModel =>
         CurrentPage is null ? null : ((dynamic)CurrentPage).ViewModel;
 
-    readonly Dictionary<Type, Page> pageCache = [];
+    public CustomFrameView()
+    {
+        var pageService = App.GetService<IPageService>();
+        Children.AddRange(pageService.EnumeratePageTypes().Select(t => (Page)Activator.CreateInstance(t)!));
+    }
+
     public void Navigate(Type pageType)
     {
-        if (!pageCache.TryGetValue(pageType, out var page))
-            Children.Add(pageCache[pageType] = page = (Page)Activator.CreateInstance(pageType)!);
+        if (Children.FirstOrDefault(p => p.GetType() == pageType) is not Page { } page)
+            Children.Add(page = (Page)Activator.CreateInstance(pageType)!);
 
-        if (CurrentPage is not null && CurrentPage != page)
-            CurrentPage.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-        page.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        foreach (var childPage in Children.OfType<Page>())
+            if (childPage != page)
+                childPage.Visibility = Visibility.Collapsed;
+        page.Visibility = Visibility.Visible;
         CurrentPage = page;
     }
 }

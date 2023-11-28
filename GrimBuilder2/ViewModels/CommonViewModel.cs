@@ -13,16 +13,19 @@ public partial class CommonViewModel : ObservableRecipient
     private readonly GdService gdService;
 
     [ObservableProperty]
-    IEnumerable<GdClass>? classes;
+    IList<GdClass>? classes;
 
     [ObservableProperty]
-    IEnumerable<GdConstellation>? constellations;
+    IList<GdConstellation>? constellations;
 
     [ObservableProperty]
-    IEnumerable<GdAssignableSkill>? assignableConstellationSkills;
+    IList<GdAssignableSkill>? assignableConstellationSkills;
 
     [ObservableProperty]
-    IEnumerable<GdNebula>? nebulas;
+    IList<GdAssignableEquipSlot>? equipSlots;
+
+    [ObservableProperty]
+    IList<GdNebula>? nebulas;
 
     [ObservableProperty]
     GdClass? selectedRawClass1, selectedRawClass2;
@@ -73,17 +76,19 @@ public partial class CommonViewModel : ObservableRecipient
 
     async Task InitializeAsync()
     {
-        var (classes, devotions) = await TaskExtended.WhenAll(
+        var (classes, devotions, equipSlots) = await TaskExtended.WhenAll(
             gdService.GetClassesAsync(),
-            gdService.GetDevotionsAsync());
+            gdService.GetDevotionsAsync(),
+            gdService.GetEquipSlotsAsync());
 
         Classes = classes;
 
         Constellations = devotions.constellations;
         AssignableConstellationSkills = devotions.constellations.SelectMany(c => c.Skills)
             .Select(App.Mapper.Map<GdAssignableSkill>)
-            .ToList();
+            .ToArray();
         Nebulas = devotions.nebulas;
+        EquipSlots = equipSlots.Select(App.Mapper.Map<GdAssignableEquipSlot>).ToArray();
 
         await LoadSaveFile(@"C:\Users\tweet\Documents\My Games\Grim Dawn\save\main\_Red Hot JiU");
     }

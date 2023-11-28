@@ -1,10 +1,11 @@
-﻿{
-    "profiles": {
-      "GrimBuilder2 (Unpackaged)": {
-        "commandName": "Project"
-      },
-      "GrimBuilder2 (Package)": {
-        "commandName": "MsixPackage"
-      }
+{
+  "profiles": {
+    "GrimBuilder2 (Unpackaged)": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    },
+    "GrimBuilder2 (Package)": {
+      "commandName": "MsixPackage"
     }
+  }
 }

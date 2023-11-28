@@ -10,21 +10,24 @@ namespace GrimBuilder2.Services;
 
 public class PageService : IPageService
 {
-    private readonly Dictionary<string, Type> _pages = [];
+    private readonly Dictionary<string, Type> pages = [];
 
     public PageService()
     {
         Configure<MasteriesViewModel, MasteriesPage>();
         Configure<SettingsViewModel, SettingsPage>();
         Configure<DevotionsViewModel, DevotionsPage>();
+        Configure<ItemsViewModel, ItemsPage>();
     }
+
+    public IEnumerable<Type> EnumeratePageTypes() => pages.Values;
 
     public Type GetPageType(string key)
     {
         Type? pageType;
-        lock (_pages)
+        lock (pages)
         {
-            if (!_pages.TryGetValue(key, out pageType))
+            if (!pages.TryGetValue(key, out pageType))
             {
                 throw new ArgumentException($"Page not found: {key}. Did you forget to call PageService.Configure?");
             }
@@ -37,21 +40,21 @@ public class PageService : IPageService
         where VM : ObservableObject
         where V : Page
     {
-        lock (_pages)
+        lock (pages)
         {
             var key = typeof(VM).FullName!;
-            if (_pages.ContainsKey(key))
+            if (pages.ContainsKey(key))
             {
                 throw new ArgumentException($"The key {key} is already configured in PageService");
             }
 
             var type = typeof(V);
-            if (_pages.ContainsValue(type))
+            if (pages.ContainsValue(type))
             {
-                throw new ArgumentException($"This type is already configured with key {_pages.First(p => p.Value == type).Key}");
+                throw new ArgumentException($"This type is already configured with key {pages.First(p => p.Value == type).Key}");
             }
 
-            _pages.Add(key, type);
+            pages.Add(key, type);
         }
     }
 }
