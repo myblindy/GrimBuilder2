@@ -8,8 +8,9 @@ using GrimBuilder2.Core.Services;
 using GrimBuilder2.Models;
 using GrimBuilder2.Services;
 using GrimBuilder2.ViewModels;
+using GrimBuilder2.ViewModels.Dialogs;
 using GrimBuilder2.Views;
-
+using GrimBuilder2.Views.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Dispatching;
@@ -73,6 +74,7 @@ public partial class App : Application
                 services.AddSingleton<GdService>();
 
                 // Views and ViewModels
+                services.AddSingleton<InstanceViewModel>();
                 services.AddSingleton<CommonViewModel>();
                 services.AddSingleton<SettingsViewModel>();
                 services.AddSingleton<SettingsPage>();
@@ -82,8 +84,12 @@ public partial class App : Application
                 services.AddSingleton<ShellViewModel>();
                 services.AddSingleton<DevotionsViewModel>();
                 services.AddSingleton<DevotionsPage>();
-                services.AddTransient<ItemsViewModel>();
-                services.AddTransient<ItemsPage>();
+                services.AddSingleton<ItemsViewModel>();
+                services.AddSingleton<ItemsPage>();
+
+                // Dialogs
+                services.AddTransient<OpenCharacterViewModel>();
+                services.AddTransient<OpenCharacterDialog>();
 
                 // Configuration
                 services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));

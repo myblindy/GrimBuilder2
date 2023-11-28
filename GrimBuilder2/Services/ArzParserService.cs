@@ -1,5 +1,6 @@
 ﻿using GrimBuilder2.Core.Helpers;
 using GrimBuilder2.Core.Models;
+using GrimBuilder2.ViewModels;
 using K4os.Compression.LZ4;
 using Nito.AsyncEx;
 using System.Buffers;
@@ -10,12 +11,10 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-namespace GrimBuilder2.Core.Services;
+namespace GrimBuilder2.Services;
 
 public class ArzParserService
 {
-    const string BasePath = @"D:\Program Files (x86)\Steam\steamapps\common\Grim Dawn";
-
     readonly Arz[] arzFiles;
     readonly Dictionary<string, string> tags = new(StringComparer.OrdinalIgnoreCase);
     readonly AsyncManualResetEvent readyEvent = new();
@@ -110,10 +109,10 @@ public class ArzParserService
         public readonly int StringTableOffset;
     }
 
-    public ArzParserService()
+    public ArzParserService(InstanceViewModel instanceViewModel)
     {
-        arzFiles = Directory.EnumerateDirectories(BasePath, "gdx*").OrderByDescending(path => path)
-            .Append(BasePath)
+        arzFiles = Directory.EnumerateDirectories(instanceViewModel.GdPath, "gdx*").OrderByDescending(path => path)
+            .Append(instanceViewModel.GdPath)
             .Select(dbPath => Path.Combine(dbPath, "database"))
             .SelectMany(arzPath => Directory.EnumerateFiles(arzPath, "*.arz", SearchOption.AllDirectories))
             .Select(arzPath => new Arz() { Path = arzPath, File = MemoryMappedFile.CreateFromFile(arzPath) })

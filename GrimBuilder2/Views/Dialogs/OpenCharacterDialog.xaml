@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="GrimBuilder2.Views.Dialogs.OpenCharacterDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:GrimBuilder2.Views.Dialogs"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:savedfile="using:GrimBuilder2.Core.Models.SavedFile"
+    xmlns:helpers="using:GrimBuilder2.Helpers"
+    mc:Ignorable="d"
+    PrimaryButtonText="Open" PrimaryButtonCommand="{x:Bind ViewModel.OpenCommand}"
+    SecondaryButtonText="Cancel"
+    x:Name="RootDialog">
+
+    <TabView SelectedIndex="{x:Bind ViewModel.Type, Mode=TwoWay}" 
+             IsAddTabButtonVisible="False">
+        <TabViewItem Header="Grim Dawn" IsClosable="False">
+            <StackPanel Orientation="Horizontal" Margin="5">
+                <TextBlock Text="Character: " VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <ComboBox PlaceholderText="Select Character" ItemsSource="{x:Bind ViewModel.Characters}"
+                          SelectedItem="{x:Bind ViewModel.SelectedCharacter, Mode=TwoWay}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="savedfile:GdsCharacter">
+                            <TextBlock>
+                                <Run Text="{x:Bind Name}"/><LineBreak/>
+                                Level <Run Text="{x:Bind Level}"/> <Run Text="{x:Bind helpers:ViewBindingHelper.GetFullClassName(ClassIndex1, ClassIndex2), Mode=OneWay}"/>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+        </TabViewItem>
+        <TabViewItem Header="Grim Building" IsClosable="False">
+
+        </TabViewItem>
+        <TabViewItem Header="Empty Character" IsClosable="False">
+
+        </TabViewItem>
+    </TabView>
+</ContentDialog>

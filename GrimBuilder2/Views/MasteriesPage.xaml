@@ -5,38 +5,33 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:models="using:GrimBuilder2.Core.Models" 
-    xmlns:controls="using:GrimBuilder2.Views.Controls" xmlns:viewmodels="using:GrimBuilder2.ViewModels"
+    xmlns:controls="using:GrimBuilder2.Views.Controls" 
+    xmlns:viewmodels="using:GrimBuilder2.ViewModels"
     mc:Ignorable="d" x:Name="RootPage">
 
     <Grid x:Name="ContentArea">
         <TabView IsAddTabButtonVisible="False" DataContext="{x:Bind ViewModel}">
-            <TabViewItem>
+            <TabViewItem IsClosable="False">
                 <TabViewItem.HeaderTemplate>
                     <DataTemplate x:DataType="viewmodels:MasteriesViewModel">
                         <ComboBox ItemsSource="{x:Bind CommonViewModel.Classes, Mode=OneWay}" 
                                   SelectedValue="{x:Bind CommonViewModel.SelectedRawClass1, Mode=TwoWay}"
-                                  DisplayMemberPath="Name"/>
+                                  PlaceholderText="Select Class" DisplayMemberPath="Name"/>
                     </DataTemplate>
                 </TabViewItem.HeaderTemplate>
-                <TabViewItem.ContentTemplate>
-                    <DataTemplate x:DataType="viewmodels:MasteriesViewModel">
-                        <controls:SkillsControlView Class="{x:Bind CommonViewModel.SelectedAssignableClass1, Mode=OneWay}"/>
-                    </DataTemplate>
-                </TabViewItem.ContentTemplate>
+
+                <controls:SkillsControlView Class="{x:Bind ViewModel.CommonViewModel.SelectedAssignableClass1, Mode=OneWay}"/>
             </TabViewItem>
-            <TabViewItem>
+            <TabViewItem IsClosable="False">
                 <TabViewItem.HeaderTemplate>
                     <DataTemplate x:DataType="viewmodels:MasteriesViewModel">
                         <ComboBox ItemsSource="{x:Bind CommonViewModel.Classes, Mode=OneWay}" 
                                   SelectedValue="{x:Bind CommonViewModel.SelectedRawClass2, Mode=TwoWay}"
-                                  DisplayMemberPath="Name"/>
+                                  PlaceholderText="Select Class" DisplayMemberPath="Name"/>
                     </DataTemplate>
                 </TabViewItem.HeaderTemplate>
-                <TabViewItem.ContentTemplate>
-                    <DataTemplate x:DataType="viewmodels:MasteriesViewModel">
-                        <controls:SkillsControlView Class="{x:Bind CommonViewModel.SelectedAssignableClass2, Mode=OneWay}"/>
-                    </DataTemplate>
-                </TabViewItem.ContentTemplate>
+
+                <controls:SkillsControlView Class="{x:Bind ViewModel.CommonViewModel.SelectedAssignableClass2, Mode=OneWay}"/>
             </TabViewItem>
         </TabView>
     </Grid>

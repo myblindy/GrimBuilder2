@@ -14,7 +14,7 @@ public class GdSkill
     static readonly int[] masteryTiers = [0, 1, 5, 10, 15, 20, 25, 32, 40, 50];
     public int? MasteryLevelRequirement => masteryTiers[Tier];
 
-    public GdSkill? Dependency { get; internal set; }
+    public GdSkill? Dependency { get; set; }
 
     public string? BitmapUpPath { get; set; } = null!;
     public string? BitmapDownPath { get; set; } = null!;

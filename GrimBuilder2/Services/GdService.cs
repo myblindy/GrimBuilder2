@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Text.RegularExpressions;
 
-namespace GrimBuilder2.Core.Services;
+namespace GrimBuilder2.Services;
 
 public class GdService(ArzParserService arz)
 {
@@ -39,7 +39,7 @@ public class GdService(ArzParserService arz)
     [Flags]
     enum GdSkillConnectorTypes { None, Forward = 1, Up = 2, Down = 4 }
 
-    public async Task<IList<GdClass>> GetClassesAsync()
+    public async Task<(IList<GdClass> Classes, IDictionary<(GdClass? Class1, GdClass? Class2), string?> ClassCombinations)> GetClassesAsync()
     {
         await arz.EnsureLoadedAsync();
 
@@ -139,7 +139,16 @@ public class GdService(ArzParserService arz)
                 result.Add(@class);
             }
 
-        return result;
+#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
+        return (result,
+            (from c1 in result.Append(null)
+             from c2 in result.Append(null)
+             select (key: (c1, c2), value:
+                c1 == c2 ? c1?.Name
+                : c1 is null ? c2.Name : c2 is null ? c1.Name
+                : arz.GetTag($"tagSkillClassName{Math.Min(c1.Index, c2.Index):00}{Math.Max(c1.Index, c2.Index):00}")))
+            .ToDictionary(w => w.key, w => w.value));
+#pragma warning restore CS8619 // Nullability of reference types in value doesn't match target type.
     }
 
     public async Task<(IList<GdAffinity> affinities, IList<GdConstellation> constellations, IList<GdNebula> nebulas)> GetDevotionsAsync()
@@ -247,7 +256,12 @@ public class GdService(ArzParserService arz)
         return equipSlots;
     }
 
-    public GdsCharacter ParseSaveFile(string baseFolderPath)
+    public IList<GdsCharacter> GetCharacterList(string gdPath, bool headerOnly = false) =>
+        Directory.EnumerateFiles(gdPath, "player.gdc", SearchOption.AllDirectories)
+            .Select(path => ParseSaveFile(Path.GetDirectoryName(path)!, headerOnly))
+            .ToList();
+
+    public GdsCharacter ParseSaveFile(string baseFolderPath, bool headerOnly = false)
     {
         using var reader = new BinaryReader(File.OpenRead(Path.Combine(baseFolderPath, "player.gdc")));
 
@@ -295,130 +309,134 @@ public class GdService(ArzParserService arz)
         var hc = reader.ReadEncUInt8(encState);
         var expansion = version >= 2 ? reader.ReadEncUInt8(encState) : 0;
 
-        // more magic stuff
-        magic = reader.ReadEncInt32(encState, false);
-        Debug.Assert(magic == 0);
-
-        magic = reader.ReadEncInt32(encState);
-        Debug.Assert(magic is 6 or 7 or 8);
-
-        // uid
-        Span<byte> uid = stackalloc byte[16];
-        reader.ReadEnc(encState, uid);
-
-        // info
-        skipNextBlock(1);
-
-        // bio
-        skipNextBlock(2);
-
-        // inventory
-        var equippedItems = readBlock(3, _ =>
+        GdsSkill[]? skills = default;
+        if (!headerOnly)
         {
+            // more magic stuff
+            magic = reader.ReadEncInt32(encState, false);
+            Debug.Assert(magic == 0);
+
             magic = reader.ReadEncInt32(encState);
-            Debug.Assert(magic == 4);
+            Debug.Assert(magic is 6 or 7 or 8);
 
-            var flag = reader.ReadEncUInt8(encState);
-            if (flag != 0)
+            // uid
+            Span<byte> uid = stackalloc byte[16];
+            reader.ReadEnc(encState, uid);
+
+            // info
+            skipNextBlock(1);
+
+            // bio
+            skipNextBlock(2);
+
+            // inventory
+            var equippedItems = readBlock(3, _ =>
             {
-                var sackCount = reader.ReadEncInt32(encState);
-                var focused = reader.ReadEncInt32(encState);
-                var selected = reader.ReadEncInt32(encState);
+                magic = reader.ReadEncInt32(encState);
+                Debug.Assert(magic == 4);
 
-                while (sackCount-- > 0)
+                var flag = reader.ReadEncUInt8(encState);
+                if (flag != 0)
                 {
-                    // sack data
-                    skipNextBlock();
+                    var sackCount = reader.ReadEncInt32(encState);
+                    var focused = reader.ReadEncInt32(encState);
+                    var selected = reader.ReadEncInt32(encState);
+
+                    while (sackCount-- > 0)
+                    {
+                        // sack data
+                        skipNextBlock();
+                    }
+
+                    var useAlternate = reader.ReadEncUInt8(encState);
+
+                    // equipment
+                    var items = new GdsItem[16];
+                    for (int i = 0; i < 12; ++i)
+                        items[i] = reader.ReadItem(true, encState);
+
+                    var alternate0 = reader.ReadEncUInt8(encState);
+                    items[12] = reader.ReadItem(true, encState);
+                    items[13] = reader.ReadItem(true, encState);
+
+                    var alternate1 = reader.ReadEncUInt8(encState);
+                    items[14] = reader.ReadItem(true, encState);
+                    items[15] = reader.ReadItem(true, encState);
+
+                    return items;
                 }
 
-                var useAlternate = reader.ReadEncUInt8(encState);
-
-                // equipment
-                var items = new GdsItem[16];
-                for (int i = 0; i < 12; ++i)
-                    items[i] = reader.ReadItem(true, encState);
-
-                var alternate0 = reader.ReadEncUInt8(encState);
-                items[12] = reader.ReadItem(true, encState);
-                items[13] = reader.ReadItem(true, encState);
-
-                var alternate1 = reader.ReadEncUInt8(encState);
-                items[14] = reader.ReadItem(true, encState);
-                items[15] = reader.ReadItem(true, encState);
-
-                return items;
-            }
-
-            return default;
-        });
-
-        // stash
-        _ = readBlock(4, _ =>
-        {
-            var version = reader.ReadEncInt32(encState);
-            Debug.Assert(version is 5 or 6);
-
-            var pageCount = version >= 6 ? reader.ReadEncInt32(encState) : 1;
-
-            while (pageCount-- > 0)
-                skipNextBlock();
-
-            return 0;
-        });
-
-        // respawns
-        skipNextBlock(5);
-
-        // teleports
-        skipNextBlock(6);
-
-        // markers
-        skipNextBlock(7);
-
-        // shrines
-        skipNextBlock(17);
-
-        // skills
-        var skills = readBlock(8, _ =>
-        {
-            version = reader.ReadEncInt32(encState);
-            Debug.Assert(version == 5);
-
-            var skills = reader.ReadEncArray(encState, () =>
-            {
-                var name = reader.ReadEncString(encState);
-                var level = reader.ReadEncInt32(encState);
-                var enabled = reader.ReadEncUInt8(encState);
-                var devotionLevel = reader.ReadEncInt32(encState);
-                var experience = reader.ReadEncInt32(encState);
-                var active = reader.ReadEncUInt32(encState);
-                reader.ReadEncUInt8(encState);
-                reader.ReadEncUInt8(encState);
-                var autoCastSkill = reader.ReadEncString(encState);
-                var autoCastController = reader.ReadEncString(encState);
-
-                return new GdsSkill(name, level, enabled != 0, devotionLevel);
-            });
-            var masteriesAllowed = reader.ReadEncInt32(encState);
-            var skillReclamationPointsUsed = reader.ReadEncInt32(encState);
-            var devotionReclamationPointsUsed = reader.ReadEncInt32(encState);
-            var charItemSkills = reader.ReadEncArray(encState, () =>
-            {
-                var name = reader.ReadEncString(encState);
-                var autoCastSkill = reader.ReadEncString(encState);
-                var autoCastController = reader.ReadEncString(encState);
-                var itemSlot = reader.ReadEncInt32(encState);
-                var itemId = reader.ReadEncInt32(encState);
-
-                return (name, autoCastSkill, autoCastController, itemSlot, itemId);
+                return default;
             });
 
-            return skills;
-        });
+            // stash
+            _ = readBlock(4, _ =>
+            {
+                var version = reader.ReadEncInt32(encState);
+                Debug.Assert(version is 5 or 6);
 
-        // don't care about the rest
+                var pageCount = version >= 6 ? reader.ReadEncInt32(encState) : 1;
+
+                while (pageCount-- > 0)
+                    skipNextBlock();
+
+                return 0;
+            });
+
+            // respawns
+            skipNextBlock(5);
+
+            // teleports
+            skipNextBlock(6);
+
+            // markers
+            skipNextBlock(7);
+
+            // shrines
+            skipNextBlock(17);
+
+            // skills
+            skills = readBlock(8, _ =>
+            {
+                version = reader.ReadEncInt32(encState);
+                Debug.Assert(version == 5);
+
+                var skills = reader.ReadEncArray(encState, () =>
+                {
+                    var name = reader.ReadEncString(encState);
+                    var level = reader.ReadEncInt32(encState);
+                    var enabled = reader.ReadEncUInt8(encState);
+                    var devotionLevel = reader.ReadEncInt32(encState);
+                    var experience = reader.ReadEncInt32(encState);
+                    var active = reader.ReadEncUInt32(encState);
+                    reader.ReadEncUInt8(encState);
+                    reader.ReadEncUInt8(encState);
+                    var autoCastSkill = reader.ReadEncString(encState);
+                    var autoCastController = reader.ReadEncString(encState);
+
+                    return new GdsSkill(name, level, enabled != 0, devotionLevel);
+                });
+                var masteriesAllowed = reader.ReadEncInt32(encState);
+                var skillReclamationPointsUsed = reader.ReadEncInt32(encState);
+                var devotionReclamationPointsUsed = reader.ReadEncInt32(encState);
+                var charItemSkills = reader.ReadEncArray(encState, () =>
+                {
+                    var name = reader.ReadEncString(encState);
+                    var autoCastSkill = reader.ReadEncString(encState);
+                    var autoCastController = reader.ReadEncString(encState);
+                    var itemSlot = reader.ReadEncInt32(encState);
+                    var itemId = reader.ReadEncInt32(encState);
+
+                    return (name, autoCastSkill, autoCastController, itemSlot, itemId);
+                });
+
+                return skills;
+            });
+
+            // don't care about the rest
+        }
 
         // build result
-        return new(charName, classIndex1, classIndex2, skills);
+        return new(charName, classIndex1, classIndex2, level, skills ?? []);
     }
 }

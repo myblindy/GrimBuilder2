@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using GrimBuilder2.ViewModels;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 
 namespace GrimBuilder2.Helpers;
@@ -22,6 +23,14 @@ static class ViewBindingHelper
     public static double NegativeCoordinateWorkaroundOffset => -10000;
     public static double GetNegativeCoordinateWorkaroundValue(int val) =>
         val - NegativeCoordinateWorkaroundOffset;
+
+    public static string? GetFullClassName(int classIndex1, int classIndex2)
+    {
+        var commonViewModel = App.GetService<CommonViewModel>();
+        return commonViewModel.GetClassCombinationName(
+            commonViewModel.Classes?.FirstOrDefault(c => c.Index == classIndex1),
+            commonViewModel.Classes?.FirstOrDefault(c => c.Index == classIndex2));
+    }
 }
 
 sealed class NotBoolConverter : IValueConverter

@@ -3,7 +3,6 @@
 using GrimBuilder2.Contracts.Services;
 using GrimBuilder2.Views;
 using GrimBuilder2.Views.Controls;
-using Microsoft.UI.Xaml.Navigation;
 
 namespace GrimBuilder2.ViewModels;
 
@@ -13,14 +12,15 @@ public partial class ShellViewModel : ObservableRecipient
     private object? selected;
 
     public INavigationService NavigationService { get; }
-
     public INavigationViewService NavigationViewService { get; }
+    public CommonViewModel CommonViewModel { get; }
 
-    public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService)
+    public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService, CommonViewModel commonViewModel)
     {
         NavigationService = navigationService;
         NavigationService.Navigated += OnNavigated;
         NavigationViewService = navigationViewService;
+        CommonViewModel = commonViewModel;
     }
 
     private void OnNavigated(object? sender, CustomFrameViewNavigatedArgs e)

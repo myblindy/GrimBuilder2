@@ -83,4 +83,6 @@ public class LocalSettingsService : ILocalSettingsService
             await Task.Run(() => _fileService.Save(_applicationDataFolder, _localsettingsFile, _settings));
         }
     }
+
+
 }

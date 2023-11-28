@@ -1,5 +1,4 @@
 ﻿using GrimBuilder2.Core.Models;
-using GrimBuilder2.Views.ToolTips;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;

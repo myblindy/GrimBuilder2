@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using GrimBuilder2.Core.Models;
-using ReactiveUI;
 
 namespace GrimBuilder2.Models;
 

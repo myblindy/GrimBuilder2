@@ -2,7 +2,6 @@
 using GrimBuilder2.Views.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
 using Microsoft.Xaml.Interactivity;
 
 namespace GrimBuilder2.Behaviors;

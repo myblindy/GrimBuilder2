@@ -1,22 +1,16 @@
-﻿using GrimBuilder2.Contracts.Services;
-using GrimBuilder2.Helpers;
+﻿using GrimBuilder2.Helpers;
 using GrimBuilder2.ViewModels;
-
+using Microsoft.UI.Input;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-
-using Windows.System;
+using Windows.Foundation;
 
 namespace GrimBuilder2.Views;
 
-// TODO: Update NavigationViewItem titles and icons in ShellPage.xaml.
 public sealed partial class ShellPage : Page
 {
-    public ShellViewModel ViewModel
-    {
-        get;
-    }
+    public ShellViewModel ViewModel { get; }
 
     public ShellPage(ShellViewModel viewModel)
     {
@@ -26,20 +20,44 @@ public sealed partial class ShellPage : Page
         ViewModel.NavigationService.Frame = NavigationFrame;
         ViewModel.NavigationViewService.Initialize(NavigationViewControl);
 
+        AppTitleBar.Loaded += (s, e) => SetRegionsForCustomTitleBar();
+        AppTitleBar.SizeChanged += (s, e) => SetRegionsForCustomTitleBar();
+
         App.MainWindow.ExtendsContentIntoTitleBar = true;
+        App.MainWindow.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
         App.MainWindow.SetTitleBar(AppTitleBar);
         App.MainWindow.Activated += MainWindow_Activated;
         AppTitleBarText.Text = "AppDisplayName".GetLocalized();
     }
 
-    private void OnLoaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    void SetRegionsForCustomTitleBar()
+    {
+        // Specify the interactive regions of the title bar.
+        double scaleAdjustment = AppTitleBar.XamlRoot.RasterizationScale;
+
+        RightPaddingColumn.Width = new GridLength(App.MainWindow.AppWindow.TitleBar.RightInset / scaleAdjustment);
+        LeftPaddingColumn.Width = new GridLength(App.MainWindow.AppWindow.TitleBar.LeftInset / scaleAdjustment);
+
+        var transform = TitleBarToolBar.TransformToVisual(null);
+        var bounds = transform.TransformBounds(new(0, 0, TitleBarToolBar.ActualWidth, TitleBarToolBar.ActualHeight));
+        var toolBarRect = GetRect(bounds, scaleAdjustment);
+
+        var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(App.MainWindow.AppWindow.Id);
+        nonClientInputSrc.SetRegionRects(NonClientRegionKind.Passthrough, [toolBarRect]);
+    }
+
+    private static Windows.Graphics.RectInt32 GetRect(Rect bounds, double scale) =>
+        new(_X: (int)Math.Round(bounds.X * scale), _Y: (int)Math.Round(bounds.Y * scale),
+            _Width: (int)Math.Round(bounds.Width * scale), _Height: (int)Math.Round(bounds.Height * scale));
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
     {
         TitleBarHelper.UpdateTitleBar(RequestedTheme);
     }
 
     private void MainWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
-        App.AppTitlebar = AppTitleBarText as UIElement;
+        App.AppTitlebar = AppTitleBarText;
     }
 
     private void NavigationViewControl_DisplayModeChanged(NavigationView sender, NavigationViewDisplayModeChangedEventArgs args)

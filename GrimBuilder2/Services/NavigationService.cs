@@ -1,8 +1,6 @@
-﻿using CommunityToolkit.WinUI.UI;
-using GrimBuilder2.Contracts.Services;
+﻿using GrimBuilder2.Contracts.Services;
 using GrimBuilder2.Contracts.ViewModels;
 using GrimBuilder2.Views.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace GrimBuilder2.Services;
 

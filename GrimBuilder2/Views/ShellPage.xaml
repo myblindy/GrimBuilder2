@@ -10,30 +10,32 @@
     Loaded="OnLoaded">
 
     <Grid>
-        <Grid x:Name="AppTitleBar"
-              Canvas.ZIndex="1"
-              Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}"
-              IsHitTestVisible="True"
-              VerticalAlignment="Top">
-            <Image Source="/Assets/WindowIcon.ico"
-                   HorizontalAlignment="Left"
-                   Width="16"
-                   Height="16" />
-            <TextBlock x:Name="AppTitleBarText"
-                       VerticalAlignment="Center"
-                       TextWrapping="NoWrap"
-                       Style="{StaticResource CaptionTextBlockStyle}"
-                       Margin="28,0,0,0"/>
+        <Grid x:Name="AppTitleBar" Canvas.ZIndex="1" IsHitTestVisible="True" VerticalAlignment="Top"
+              Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
+                <ColumnDefinition x:Name="ToolbarColumn" Width="auto"/>
+                <ColumnDefinition x:Name="LeftDragColumn" Width="*"/>
+                <ColumnDefinition x:Name="TitleColumn" Width="auto"/>
+                <ColumnDefinition x:Name="RightDragColumn" Width="*"/>
+                <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
+            </Grid.ColumnDefinitions>
+
+            <CommandBar x:Name="TitleBarToolBar" Grid.Column="1" VerticalAlignment="Center" DefaultLabelPosition="Right" OverflowButtonVisibility="Collapsed">
+                <AppBarButton ToolTipService.ToolTip="Open or Create a New Character" Label="Open"
+                              Command="{x:Bind ViewModel.CommonViewModel.OpenCommand}">
+                    <AppBarButton.Icon>
+                        <ImageIcon Source="/Assets/open-folder.png"/>
+                    </AppBarButton.Icon>
+                </AppBarButton>
+            </CommandBar>
+
+            <TextBlock Grid.Column="3" x:Name="AppTitleBarText" VerticalAlignment="Center" HorizontalAlignment="Center"
+                       TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}"/>
         </Grid>
-        <NavigationView
-            x:Name="NavigationViewControl"
-            Canvas.ZIndex="0"
-            IsBackButtonVisible="Collapsed"
-            SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
-            IsSettingsVisible="True"
-            ExpandedModeThresholdWidth="1280"
-            DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
-            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
+        <NavigationView x:Name="NavigationViewControl" Canvas.ZIndex="0" IsBackButtonVisible="Collapsed" SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+                        IsSettingsVisible="True" ExpandedModeThresholdWidth="1280" DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
+                        Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Uid="Shell_Items" helpers:NavigationHelper.NavigateTo="GrimBuilder2.ViewModels.ItemsViewModel">
                     <NavigationViewItem.Icon>
@@ -61,14 +63,11 @@
                 </DataTemplate>
             </NavigationView.HeaderTemplate>
             <i:Interaction.Behaviors>
-                <behaviors:NavigationViewHeaderBehavior
-                    DefaultHeader="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
+                <behaviors:NavigationViewHeaderBehavior DefaultHeader="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
                     <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
                         <DataTemplate>
                             <Grid>
-                                <TextBlock
-                                    Text="{Binding}"
-                                    Style="{ThemeResource TitleTextBlockStyle}" />
+                                <TextBlock Text="{Binding}" Style="{ThemeResource TitleTextBlockStyle}" />
                             </Grid>
                         </DataTemplate>
                     </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>

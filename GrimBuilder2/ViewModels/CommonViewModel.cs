@@ -2,8 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using GrimBuilder2.Core.Helpers;
 using GrimBuilder2.Core.Models;
-using GrimBuilder2.Core.Services;
 using GrimBuilder2.Models;
+using GrimBuilder2.Services;
 using ReactiveUI;
 
 namespace GrimBuilder2.ViewModels;
@@ -11,9 +11,13 @@ namespace GrimBuilder2.ViewModels;
 public partial class CommonViewModel : ObservableRecipient
 {
     private readonly GdService gdService;
+    private readonly DialogService dialogService;
 
     [ObservableProperty]
     IList<GdClass>? classes;
+
+    [ObservableProperty]
+    IDictionary<(GdClass?, GdClass?), string?>? classCombinations;
 
     [ObservableProperty]
     IList<GdConstellation>? constellations;
@@ -67,21 +71,23 @@ public partial class CommonViewModel : ObservableRecipient
     partial void OnSelectedRawClass2Changed(GdClass? value) =>
         OnSelectedRawClass(value, x => SelectedAssignableClass2 = x);
 
-    public CommonViewModel(GdService gdService)
+    public CommonViewModel(GdService gdService, DialogService dialogService)
     {
         this.gdService = gdService;
+        this.dialogService = dialogService;
 
         _ = InitializeAsync();
     }
 
     async Task InitializeAsync()
     {
-        var (classes, devotions, equipSlots) = await TaskExtended.WhenAll(
+        var (classResults, devotions, equipSlots) = await TaskExtended.WhenAll(
             gdService.GetClassesAsync(),
             gdService.GetDevotionsAsync(),
             gdService.GetEquipSlotsAsync());
 
-        Classes = classes;
+        Classes = classResults.Classes;
+        ClassCombinations = classResults.ClassCombinations;
 
         Constellations = devotions.constellations;
         AssignableConstellationSkills = devotions.constellations.SelectMany(c => c.Skills)
@@ -90,24 +96,30 @@ public partial class CommonViewModel : ObservableRecipient
         Nebulas = devotions.nebulas;
         EquipSlots = equipSlots.Select(App.Mapper.Map<GdAssignableEquipSlot>).ToArray();
 
-        await LoadSaveFile(@"C:\Users\tweet\Documents\My Games\Grim Dawn\save\main\_Red Hot JiU");
+        await Open();
     }
 
     [RelayCommand]
-    async Task LoadSaveFile(string path)
+    async Task Open()
     {
+        if (await dialogService.OpenCharacterAsync() is not { } result) return;
+
         // clear all the assigned points
         SelectedRawClass1 = SelectedRawClass2 = null;
 
-        // load the save file
-        var saveData = await Task.Run(() => gdService.ParseSaveFile(path));
-
         // set the classes
-        SelectedRawClass1 = Classes!.First(w => w.Index == saveData.ClassIndex1);
-        SelectedRawClass2 = Classes!.First(w => w.Index == saveData.ClassIndex2);
+        SelectedRawClass1 = Classes!.FirstOrDefault(w => w.Index == result.ClassIndex1);
+        SelectedRawClass2 = Classes!.FirstOrDefault(w => w.Index == result.ClassIndex2);
 
         // set the masteries
-        foreach (var skill in SelectedAssignableClass1!.AssignableSkills!.Concat(SelectedAssignableClass2!.AssignableSkills!).Concat(AssignableConstellationSkills!))
-            skill.AssignedPoints = saveData.Skills.FirstOrDefault(s => s.Name == skill.InternalName)?.Level ?? 0;
+        IEnumerable<GdAssignableSkill> allSkills = AssignableConstellationSkills!;
+        if (SelectedAssignableClass1?.AssignableSkills is not null)
+            allSkills = allSkills.Concat(SelectedAssignableClass1.AssignableSkills);
+        if (SelectedAssignableClass2?.AssignableSkills is not null)
+            allSkills = allSkills.Concat(SelectedAssignableClass2.AssignableSkills);
+        foreach (var skill in allSkills)
+            skill.AssignedPoints = result.Skills.FirstOrDefault(s => s.Name == skill.InternalName)?.Level ?? 0;
     }
+
+    public string? GetClassCombinationName(GdClass? c1, GdClass? c2) => ClassCombinations?[(c1, c2)];
 }

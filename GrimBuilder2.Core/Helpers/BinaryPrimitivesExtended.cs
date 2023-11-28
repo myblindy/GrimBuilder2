@@ -3,7 +3,7 @@ using System.Text;
 
 namespace GrimBuilder2.Core.Helpers;
 
-internal static class BinaryPrimitivesExtended
+public static class BinaryPrimitivesExtended
 {
     public static string ReadGDStringLittleEndian(this ReadOnlySpan<byte> span, out int byteLength)
     {

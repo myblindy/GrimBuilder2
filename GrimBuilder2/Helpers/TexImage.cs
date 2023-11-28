@@ -1,4 +1,4 @@
-﻿using GrimBuilder2.Core.Services;
+﻿using GrimBuilder2.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
