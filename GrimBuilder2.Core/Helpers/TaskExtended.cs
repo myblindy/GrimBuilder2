@@ -31,4 +31,14 @@ public static class TaskExtended
             async () => (object?)await t3]);
         return ((T1)results[0], (T2)results[1], (T3)results[2]);
     }
+
+    public static async Task<(T1, T2, T3, T4)> WhenAll<T1, T2, T3, T4>(Task<T1> t1, Task<T2> t2, Task<T3> t3, Task<T4> t4)
+    {
+        var results = await WhenAll([
+            async () => (object?)await t1,
+            async () => (object?)await t2,
+            async () => (object?)await t3,
+            async () => (object?)await t4]);
+        return ((T1)results[0], (T2)results[1], (T3)results[2], (T4)results[3]);
+    }
 }

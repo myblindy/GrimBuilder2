@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using GrimBuilder2.Core.Helpers;
 using GrimBuilder2.Core.Models;
+using GrimBuilder2.Core.Models.SavedFile;
 using GrimBuilder2.Models;
 using GrimBuilder2.Services;
 using ReactiveUI;
@@ -30,6 +31,9 @@ public partial class CommonViewModel : ObservableRecipient
 
     [ObservableProperty]
     IList<GdNebula>? nebulas;
+
+    [ObservableProperty]
+    IList<GdItem>? items;
 
     [ObservableProperty]
     GdClass? selectedRawClass1, selectedRawClass2;
@@ -81,10 +85,11 @@ public partial class CommonViewModel : ObservableRecipient
 
     async Task InitializeAsync()
     {
-        var (classResults, devotions, equipSlots) = await TaskExtended.WhenAll(
-            gdService.GetClassesAsync(),
-            gdService.GetDevotionsAsync(),
-            gdService.GetEquipSlotsAsync());
+        var (classResults, devotions, equipSlots, items) = await TaskExtended.WhenAll(
+            Task.Run(() => gdService.GetClassesAsync()),
+            Task.Run(() => gdService.GetDevotionsAsync()),
+            Task.Run(() => gdService.GetEquipSlotsAsync()),
+            Task.Run(() => gdService.GetItemsAsync()));
 
         Classes = classResults.Classes;
         ClassCombinations = classResults.ClassCombinations;
@@ -95,6 +100,7 @@ public partial class CommonViewModel : ObservableRecipient
             .ToArray();
         Nebulas = devotions.nebulas;
         EquipSlots = equipSlots.Select(App.Mapper.Map<GdAssignableEquipSlot>).ToArray();
+        Items = items;
 
         await Open();
     }
@@ -119,7 +125,33 @@ public partial class CommonViewModel : ObservableRecipient
             allSkills = allSkills.Concat(SelectedAssignableClass2.AssignableSkills);
         foreach (var skill in allSkills)
             skill.AssignedPoints = result.Skills.FirstOrDefault(s => s.Name == skill.InternalName)?.Level ?? 0;
+
+        // set the equipped items
+        for (var slotIndex = 0; slotIndex < EquipSlots!.Count; ++slotIndex)
+        {
+            var savedItem = result.Items[EquipSlots[slotIndex].Type switch
+            {
+                EquipSlotType.Artifact => 11,
+                EquipSlotType.Chest => 2,
+                EquipSlotType.Feet => 4,
+                EquipSlotType.Finger1 => 6,
+                EquipSlotType.Finger2 => 7,
+                EquipSlotType.HandLeft => 13,
+                EquipSlotType.HandRight => 12,
+                EquipSlotType.Hands => 5,
+                EquipSlotType.Head => 0,
+                EquipSlotType.Legs => 3,
+                EquipSlotType.Medal => 10,
+                EquipSlotType.Neck => 1,
+                EquipSlotType.Shoulders => 9,
+                EquipSlotType.Waist => 8,
+                _ => throw new NotImplementedException(),
+            }];
+            EquipSlots[slotIndex].Item = savedItem is null ? null : BuildItem(savedItem);
+        }
     }
 
     public string? GetClassCombinationName(GdClass? c1, GdClass? c2) => ClassCombinations?[(c1, c2)];
+
+    GdItem? BuildItem(GdsItem savedItem) => Items!.FirstOrDefault(i => i.DbrPath == savedItem.NameFile);
 }

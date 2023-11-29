@@ -4,98 +4,124 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace GrimBuilder2.Core.Models;
 
-public class DbrData : IReadOnlyDictionary<string, DbrValues>
+public class DbrData
 {
     public string Path { get; }
 
-    readonly Dictionary<string, DbrValues> entries = [];
+    readonly byte[] data;
+    readonly IReadOnlyList<string> strings;
+    readonly Dictionary<string, (DbrValueType type, int offset, int count)> entries = [];
 
-    public DbrData(string path, ReadOnlySpan<byte> data, IReadOnlyList<string> strings)
+    public DbrData(string path, byte[] data, IReadOnlyList<string> strings)
     {
-        while (!data.IsEmpty)
-        {
-            var type = (DbrValueType)BinaryPrimitives.ReadUInt16LittleEndian(data);
-            var entriesCount = BinaryPrimitives.ReadUInt16LittleEndian(data[2..]);
-            var key = strings[BinaryPrimitives.ReadInt32LittleEndian(data[4..])];
-            data = data[8..];
-
-            DbrValues values = new(key, type);
-            while (entriesCount-- > 0)
-            {
-                switch (type)
-                {
-                    case DbrValueType.Integer:
-                    case DbrValueType.Boolean:
-                        values.IntegerValues!.Add(BinaryPrimitives.ReadInt32LittleEndian(data));
-                        break;
-                    case DbrValueType.Single:
-                        values.SingleValues!.Add(BinaryPrimitives.ReadSingleLittleEndian(data));
-                        break;
-                    case DbrValueType.String:
-                        values.StringValues!.Add(strings[BinaryPrimitives.ReadInt32LittleEndian(data)]);
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                }
-                data = data[4..];
-            }
-
-            entries[key] = values;
-        }
+        this.data = data;
+        this.strings = strings;
         Path = path;
+
+        ReadOnlySpan<byte> dataSpan = data;
+        var offset = 0;
+        while (!dataSpan.IsEmpty)
+        {
+            var type = (DbrValueType)BinaryPrimitives.ReadUInt16LittleEndian(dataSpan);
+            var entriesCount = BinaryPrimitives.ReadUInt16LittleEndian(dataSpan[2..]);
+            var key = strings[BinaryPrimitives.ReadInt32LittleEndian(dataSpan[4..])];
+
+            // store the offset to the beginning of the data entries
+            entries[key] = (type, offset + 8, entriesCount);
+
+            // all data entries are 4 bytes long
+            var entryLength = 8 + entriesCount * 4;
+            offset += entryLength;
+            dataSpan = dataSpan[entryLength..];
+        }
     }
 
-    #region IReadOnlyDictionary<string, DbrValues> implementation
+    public IEnumerable<string> Keys => entries.Keys;
 
-    public IEnumerable<string> Keys => ((IReadOnlyDictionary<string, DbrValues>)entries).Keys;
+    public DbrValueType GetValueType(string key) =>
+        entries.TryGetValue(key, out var entry) ? entry.type : throw new InvalidOperationException();
 
-    public IEnumerable<DbrValues> Values => ((IReadOnlyDictionary<string, DbrValues>)entries).Values;
+    public bool GetBooleanValue(string key) =>
+        GetIntegerValue(key) != 0;
 
-    public int Count => ((IReadOnlyCollection<KeyValuePair<string, DbrValues>>)entries).Count;
+    public int GetIntegerValue(string key) =>
+        TryGetIntegerValue(key, out var value) ? value : throw new InvalidOperationException();
 
-    public DbrValues this[string key] => ((IReadOnlyDictionary<string, DbrValues>)entries)[key];
+    public bool TryGetIntegerValue(string key, out int value)
+    {
+        if (entries.TryGetValue(key, out var entry) && entry.type is DbrValueType.Integer or DbrValueType.Boolean)
+        {
+            value = BinaryPrimitives.ReadInt32LittleEndian(data.AsSpan(entry.offset));
+            return true;
+        }
+        value = default;
+        return false;
+    }
 
-    public bool ContainsKey(string key) => ((IReadOnlyDictionary<string, DbrValues>)entries).ContainsKey(key);
-    public bool TryGetValue(string key, [MaybeNullWhen(false)] out DbrValues value) => ((IReadOnlyDictionary<string, DbrValues>)entries).TryGetValue(key, out value);
-    public IEnumerator<KeyValuePair<string, DbrValues>> GetEnumerator() => ((IEnumerable<KeyValuePair<string, DbrValues>>)entries).GetEnumerator();
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable)entries).GetEnumerator();
+    public int[] GetIntegerValues(string key) =>
+        TryGetIntegerValues(key, out var values) ? values : throw new InvalidOperationException();
 
-    #endregion
+    public bool TryGetIntegerValues(string key, [NotNullWhen(true)] out int[] values)
+    {
+        if (entries.TryGetValue(key, out var entry) && entry.type == DbrValueType.Integer)
+        {
+            values = new int[entry.count];
+            for (var i = 0; i < entry.count; ++i)
+                values[i] = BinaryPrimitives.ReadInt32LittleEndian(data.AsSpan(entry.offset + i * 4));
+            return true;
+        }
+
+        values = [];
+        return false;
+    }
+
+    public string GetStringValue(string key) =>
+        TryGetStringValue(key, out var value) ? value : throw new InvalidOperationException();
+
+    public bool TryGetStringValue(string key, [NotNullWhen(true)] out string? value)
+    {
+        if (entries.TryGetValue(key, out var entry) && entry.type == DbrValueType.String)
+        {
+            value = strings[BinaryPrimitives.ReadInt32LittleEndian(data.AsSpan(entry.offset))];
+            return true;
+        }
+        value = default;
+        return false;
+    }
+
+    public string[] GetStringValues(string key) =>
+        TryGetStringValues(key, out var values) ? values : throw new InvalidOperationException();
+
+    public bool TryGetStringValues(string key, [NotNullWhen(true)] out string[]? values)
+    {
+        if (entries.TryGetValue(key, out var entry) && entry.type == DbrValueType.String)
+        {
+            values = new string[entry.count];
+            for (var i = 0; i < entry.count; ++i)
+                values[i] = strings[BinaryPrimitives.ReadInt32LittleEndian(data.AsSpan(entry.offset + i * 4))];
+            return true;
+        }
+
+        values = [];
+        return false;
+    }
+
+    public float[] GetFloatValues(string key) =>
+        TryGetFloatValues(key, out var values) ? values : throw new InvalidOperationException();
+
+    public bool TryGetFloatValues(string key, [NotNullWhen(true)] out float[] values)
+    {
+        if (entries.TryGetValue(key, out var entry) && entry.type == DbrValueType.Single)
+        {
+            values = new float[entry.count];
+            for (var i = 0; i < entry.count; ++i)
+                values[i] = BinaryPrimitives.ReadSingleLittleEndian(data.AsSpan(entry.offset + i * 4));
+            return true;
+        }
+
+        values = [];
+        return false;
+    }
 }
 
 public enum DbrValueType { Integer, Single, String, Boolean }
-
-public readonly struct DbrValues
-{
-    public DbrValues(string key, DbrValueType type)
-    {
-        Key = key;
-        Type = type;
-
-        switch (Type)
-        {
-            case DbrValueType.Integer:
-            case DbrValueType.Boolean:
-                IntegerValues = [];
-                break;
-            case DbrValueType.Single:
-                SingleValues = [];
-                break;
-            case DbrValueType.String:
-                StringValues = [];
-                break;
-            default:
-                throw new NotImplementedException();
-        }
-    }
-
-    public List<int>? IntegerValues { get; }
-    public int IntegerValueUnsafe => IntegerValues![0];
-    public bool BooleanValueUnsafe => IntegerValueUnsafe != 0;
-    public List<float>? SingleValues { get; }
-    public float SingleValueUnsafe => SingleValues![0];
-    public List<string>? StringValues { get; }
-    public string StringValueUnsafe => StringValues![0];
-    public string Key { get; }
-    public DbrValueType Type { get; }
-}

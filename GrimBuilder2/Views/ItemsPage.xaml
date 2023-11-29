@@ -17,11 +17,14 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="models:GdAssignableEquipSlot">
-                    <Image helpers:TexImage.Source="{x:Bind SilhouetteBitmapPath}">
-                        <Image.RenderTransform>
+                    <Grid>
+                        <Grid.RenderTransform>
                             <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
-                        </Image.RenderTransform>
-                    </Image>
+                        </Grid.RenderTransform>
+
+                        <Image helpers:TexImage.Source="{x:Bind SilhouetteBitmapPath}"/>
+                        <Image helpers:TexImage.Source="{x:Bind Item.BitmapPath, Mode=OneWay}"/>
+                    </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

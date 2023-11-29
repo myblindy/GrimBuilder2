@@ -1,14 +1,16 @@
 ﻿using GrimBuilder2.Core.Helpers;
 using GrimBuilder2.Core.Models;
 using GrimBuilder2.Core.Models.SavedFile;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace GrimBuilder2.Services;
 
-public class GdService(ArzParserService arz)
+public partial class GdService(ArzParserService arz)
 {
     DbrData NavigateSkillToLeafSkill(DbrData dbr, out bool petSkill, out bool buffSkill)
     {
@@ -18,15 +20,15 @@ public class GdService(ArzParserService arz)
         do
         {
             changed = false;
-            if (dbr.TryGetValue("buffSkillName", out var buffSkillValue)
-                && arz.GetDbrData(buffSkillValue.StringValueUnsafe) is { } buffSkillDbr)
+            if (dbr.TryGetStringValue("buffSkillName", out var buffSkillValue)
+                && arz.GetDbrData(buffSkillValue) is { } buffSkillDbr)
             {
                 dbr = buffSkillDbr;
                 buffSkill = true;
                 changed = true;
             }
-            else if (dbr.TryGetValue("petSkillName", out var petSkillValue)
-                && arz.GetDbrData(petSkillValue.StringValueUnsafe) is { } petSkillDbr)
+            else if (dbr.TryGetStringValue("petSkillName", out var petSkillValue)
+                && arz.GetDbrData(petSkillValue) is { } petSkillDbr)
             {
                 dbr = petSkillDbr;
                 petSkill = true;
@@ -47,16 +49,18 @@ public class GdService(ArzParserService arz)
         var classFiles = arz.GetDbrData(new Regex(@"records/ui/skills/class\d+"));
 
         foreach (var master in classFiles.Where(f => Path.GetFileName(f.Path).Equals("classtable.dbr", StringComparison.OrdinalIgnoreCase)))
-            if (arz.GetTag(master["skillTabTitle"].StringValues![0]) is { } name)
+            if (arz.GetTag(master.GetStringValue("skillTabTitle")) is { } name)
             {
-                var uiSkills = master["tabSkillButtons"].StringValues!.Select(arz.GetDbrData).ToList();
-                var rawSkills = uiSkills.Select(uiSkill => arz.GetDbrData(uiSkill!["skillName"].StringValueUnsafe)).ToList();
+                var uiSkills = master.GetStringValues("tabSkillButtons").Select(arz.GetDbrData).ToList();
+                var rawSkills = uiSkills.Select(uiSkill => arz.GetDbrData(uiSkill!.GetStringValue("skillName"))).ToList();
 
                 GdClass @class = new()
                 {
                     Name = name,
                     Index = int.Parse(Regex.Match(rawSkills[0]!.Path, @"\d+").Value, CultureInfo.InvariantCulture),
-                    BitmapPath = arz.GetDbrData(master["skillPaneMasteryBitmap"].StringValueUnsafe)!["bitmapName"].StringValueUnsafe.Replace("ui/", "/")
+                    BitmapPath = arz.GetDbrData(master.GetStringValue("skillPaneMasteryBitmap"))!
+                        .GetStringValue("bitmapName")
+                        .Replace("ui/", "/")
                 };
 
                 var skillConnectors = new Dictionary<GdSkill, List<GdSkillConnectorTypes>>();
@@ -70,27 +74,27 @@ public class GdService(ArzParserService arz)
                     {
                         var skill = new GdSkill
                         {
-                            Name = arz.GetTag(w.rawSkill["skillDisplayName"].StringValueUnsafe)!,
+                            Name = arz.GetTag(w.rawSkill.GetStringValue("skillDisplayName"))!,
                             InternalName = w.originalRawSkill.Path,
-                            Description = arz.GetTag(w.rawSkill["skillBaseDescription"].StringValueUnsafe)!,
-                            Tier = w.rawSkill.TryGetValue("skillTier", out var skillTierValue) ? skillTierValue.IntegerValueUnsafe : 0,
-                            MaximumLevel = w.rawSkill["skillMaxLevel"].IntegerValueUnsafe,
-                            UltimateLevel = w.rawSkill.TryGetValue("skillUltimateLevel", out var ultimateLevel) ? ultimateLevel.IntegerValueUnsafe : null,
+                            Description = arz.GetTag(w.rawSkill.GetStringValue("skillBaseDescription"))!,
+                            Tier = w.rawSkill.TryGetIntegerValue("skillTier", out var skillTierValue) ? skillTierValue : 0,
+                            MaximumLevel = w.rawSkill.GetIntegerValue("skillMaxLevel"),
+                            UltimateLevel = w.rawSkill.TryGetIntegerValue("skillUltimateLevel", out var ultimateLevel) ? ultimateLevel : null,
 
-                            BitmapUpPath = w.rawSkill["skillUpBitmapName"].StringValueUnsafe,
-                            BitmapDownPath = w.rawSkill["skillDownBitmapName"].StringValueUnsafe,
+                            BitmapUpPath = w.rawSkill.GetStringValue("skillUpBitmapName"),
+                            BitmapDownPath = w.rawSkill.GetStringValue("skillDownBitmapName"),
 
-                            BitmapFrameUpPath = w.uiSkill.TryGetValue("bitmapNameUp", out var bitmapNameUp) ? bitmapNameUp.StringValueUnsafe : null,
-                            BitmapFrameDownPath = w.uiSkill.TryGetValue("bitmapNameDown", out var bitmapNameDown) ? bitmapNameDown.StringValueUnsafe : null,
-                            BitmapFrameInFocusPath = w.uiSkill.TryGetValue("bitmapNameInFocus", out var bitmapNameInFocus) ? bitmapNameInFocus.StringValueUnsafe : null,
+                            BitmapFrameUpPath = w.uiSkill.TryGetStringValue("bitmapNameUp", out var bitmapNameUp) ? bitmapNameUp : null,
+                            BitmapFrameDownPath = w.uiSkill.TryGetStringValue("bitmapNameDown", out var bitmapNameDown) ? bitmapNameDown : null,
+                            BitmapFrameInFocusPath = w.uiSkill.TryGetStringValue("bitmapNameInFocus", out var bitmapNameInFocus) ? bitmapNameInFocus : null,
 
-                            X = w.uiSkill["bitmapPositionX"].IntegerValueUnsafe,
-                            Y = w.uiSkill["bitmapPositionY"].IntegerValueUnsafe,
-                            Circular = w.uiSkill["isCircular"].BooleanValueUnsafe,
+                            X = w.uiSkill.GetIntegerValue("bitmapPositionX"),
+                            Y = w.uiSkill.GetIntegerValue("bitmapPositionY"),
+                            Circular = w.uiSkill.GetBooleanValue("isCircular"),
                         };
 
-                        if (w.rawSkill.TryGetValue("skillConnectionOn", out var skillConnectionValue) && skillConnectionValue.Type is DbrValueType.String && skillConnectionValue.StringValues!.Count > 0)
-                            skillConnectors.Add(skill, skillConnectionValue.StringValues.Select(w => w switch
+                        if (w.rawSkill.TryGetStringValues("skillConnectionOn", out var skillConnectionValues) && skillConnectionValues.Length > 0)
+                            skillConnectors.Add(skill, skillConnectionValues.Select(w => w switch
                             {
                                 "ui/skills/skillallocation/skills_connectoroncenter.tex" => GdSkillConnectorTypes.Forward,
                                 "ui/skills/skillallocation/skills_connectoronbranchboth.tex" => GdSkillConnectorTypes.Forward | GdSkillConnectorTypes.Up | GdSkillConnectorTypes.Down,
@@ -157,48 +161,48 @@ public class GdService(ArzParserService arz)
 
         var masterDevotions = arz.GetDbrData("records/ui/skills/devotion/devotion_mastertable.dbr")!;
         var affinities = masterDevotions.Keys.Where(key => Regex.IsMatch(key, @"affinity\d+Rollover"))
-            .Select(key => arz.GetDbrData(masterDevotions[key].StringValueUnsafe))
+            .Select(key => arz.GetDbrData(masterDevotions.GetStringValue(key)))
             .Select(dbr => new GdAffinity
             {
-                Name = arz.GetTag(dbr!["Line1Tag"].StringValueUnsafe)!,
-                Description = arz.GetTag(dbr["Line2Tag"].StringValueUnsafe)!,
+                Name = arz.GetTag(dbr!.GetStringValue("Line1Tag"))!,
+                Description = arz.GetTag(dbr.GetStringValue("Line2Tag"))!,
             })
             .ToList();
 
         var constellations = masterDevotions.Keys.Where(key => Regex.IsMatch(key, @"devotionConstellation\d+"))
-            .Select(key => arz.GetDbrData(masterDevotions[key].StringValueUnsafe))
+            .Select(key => arz.GetDbrData(masterDevotions.GetStringValue(key)))
             .Select(constellation =>
             {
-                var backgroundDbr = constellation!.TryGetValue("constellationBackground", out var backgroundValue)
-                    ? arz.GetDbrData(backgroundValue.StringValueUnsafe) : null;
+                var backgroundDbr = constellation!.TryGetStringValue("constellationBackground", out var backgroundValue)
+                    ? arz.GetDbrData(backgroundValue) : null;
                 var skillDependencyIndex = new Dictionary<GdSkill, int>();
                 var gdConstellation = new GdConstellation
                 {
-                    Name = arz.GetTag(constellation["constellationDisplayTag"].StringValueUnsafe)!,
-                    Description = arz.GetTag(constellation["constellationInfoTag"].StringValueUnsafe)!,
-                    BitmapPath = backgroundDbr?["bitmapName"].StringValueUnsafe,
-                    X = backgroundDbr?["bitmapPositionX"].IntegerValueUnsafe ?? 0,
-                    Y = backgroundDbr?["bitmapPositionY"].IntegerValueUnsafe ?? 0,
+                    Name = arz.GetTag(constellation.GetStringValue("constellationDisplayTag"))!,
+                    Description = arz.GetTag(constellation.GetStringValue("constellationInfoTag"))!,
+                    BitmapPath = backgroundDbr?.GetStringValue("bitmapName"),
+                    X = backgroundDbr?.GetIntegerValue("bitmapPositionX") ?? 0,
+                    Y = backgroundDbr?.GetIntegerValue("bitmapPositionY") ?? 0,
                     Skills = constellation.Keys.Where(key => Regex.IsMatch(key, @"devotionButton\d+"))
-                        .Select(key => (uiSkill: arz.GetDbrData(constellation[key].StringValueUnsafe)!, index: int.Parse(Regex.Match(key, @"\d+$").ValueSpan, CultureInfo.InvariantCulture)))
+                        .Select(key => (uiSkill: arz.GetDbrData(constellation.GetStringValue(key))!, index: int.Parse(Regex.Match(key, @"\d+$").ValueSpan, CultureInfo.InvariantCulture)))
                         .Select(w =>
                         {
-                            var rawSkill = arz.GetDbrData(w.uiSkill["skillName"].StringValueUnsafe)!;
+                            var rawSkill = arz.GetDbrData(w.uiSkill.GetStringValue("skillName"))!;
                             return (w.uiSkill, originalRawSkill: rawSkill,
-                                linkIndex: constellation.TryGetValue($"devotionLinks{w.index}", out var linkIndex) ? linkIndex.IntegerValueUnsafe - 1 : -1,
+                                linkIndex: constellation.TryGetIntegerValue($"devotionLinks{w.index}", out var linkIndex) ? linkIndex - 1 : -1,
                                 rawSkill: NavigateSkillToLeafSkill(rawSkill, out _, out _));
                         })
                         .Select(w =>
                         {
                             var skill = new GdSkill
                             {
-                                Name = arz.GetTag(w.rawSkill["skillDisplayName"].StringValueUnsafe)!,
+                                Name = arz.GetTag(w.rawSkill.GetStringValue("skillDisplayName"))!,
                                 InternalName = w.originalRawSkill.Path,
-                                X = w.uiSkill["bitmapPositionX"].IntegerValueUnsafe,
-                                Y = w.uiSkill["bitmapPositionY"].IntegerValueUnsafe,
-                                BitmapFrameDownPath = w.uiSkill["bitmapNameDown"].StringValueUnsafe,
-                                BitmapFrameUpPath = w.uiSkill["bitmapNameUp"].StringValueUnsafe,
-                                BitmapFrameInFocusPath = w.uiSkill["bitmapNameInFocus"].StringValueUnsafe,
+                                X = w.uiSkill.GetIntegerValue("bitmapPositionX"),
+                                Y = w.uiSkill.GetIntegerValue("bitmapPositionY"),
+                                BitmapFrameDownPath = w.uiSkill.GetStringValue("bitmapNameDown"),
+                                BitmapFrameUpPath = w.uiSkill.GetStringValue("bitmapNameUp"),
+                                BitmapFrameInFocusPath = w.uiSkill.GetStringValue("bitmapNameInFocus"),
                             };
                             if (w.linkIndex >= 0)
                                 skillDependencyIndex.Add(skill, w.linkIndex);
@@ -207,13 +211,13 @@ public class GdService(ArzParserService arz)
                         .ToArray(),
                     RequiredAffinities = constellation.Keys.Where(key => Regex.IsMatch(key, @"affinityRequiredName\d+"))
                         .Select(key => (
-                            affinities.First(a => a.Name == constellation[key].StringValueUnsafe),
-                            constellation[$"{key[..^5]}{key[^1]}"].IntegerValueUnsafe))
+                            affinities.First(a => a.Name == constellation.GetStringValue(key)),
+                            constellation.GetIntegerValue($"{key[..^5]}{key[^1]}")))
                         .ToArray(),
                     GrantedAffinities = constellation.Keys.Where(key => Regex.IsMatch(key, @"affinityGivenName\d+"))
                         .Select(key => (
-                            affinities.First(a => a.Name == constellation[key].StringValueUnsafe),
-                            constellation[$"{key[..^5]}{key[^1]}"].IntegerValueUnsafe))
+                            affinities.First(a => a.Name == constellation.GetStringValue(key)),
+                            constellation.GetIntegerValue($"{key[..^5]}{key[^1]}")))
                         .ToArray(),
                 };
                 foreach (var (skill, linkIndex) in skillDependencyIndex)
@@ -222,16 +226,77 @@ public class GdService(ArzParserService arz)
             })
             .ToList();
 
-        var nebulas = masterDevotions["nebulaSections"].StringValues!.Select(arz.GetDbrData)
+        var nebulas = masterDevotions.GetStringValues("nebulaSections").Select(arz.GetDbrData)
             .Select(nebula => new GdNebula
             {
-                BitmapPath = nebula!["bitmapName"].StringValueUnsafe,
-                X = nebula["bitmapPositionX"].IntegerValueUnsafe,
-                Y = nebula["bitmapPositionY"].IntegerValueUnsafe
+                BitmapPath = nebula!.GetStringValue("bitmapName"),
+                X = nebula.GetIntegerValue("bitmapPositionX"),
+                Y = nebula.GetIntegerValue("bitmapPositionY")
             })
             .ToList();
 
         return (affinities, constellations, nebulas);
+    }
+
+    static readonly Dictionary<string, GdItemType> itemTypeMapping = new()
+    {
+        ["ItemArtifact"] = GdItemType.Relic,
+        ["ArmorProtective_Feet"] = GdItemType.Feet,
+        ["ArmorProtective_Hands"] = GdItemType.Hands,
+        ["ArmorProtective_Head"] = GdItemType.Head,
+        ["ArmorProtective_Chest"] = GdItemType.Chest,
+        ["ArmorProtective_Shoulders"] = GdItemType.Shoulders,
+        ["ArmorProtective_Waist"] = GdItemType.Belt,
+        ["ArmorProtective_Legs"] = GdItemType.Legs,
+        ["ArmorJewelry_Medal"] = GdItemType.Medal,
+        ["ArmorJewelry_Amulet"] = GdItemType.Amulet,
+        ["ArmorJewelry_Ring"] = GdItemType.Ring,
+        ["WeaponArmor_Offhand"] = GdItemType.OffhandFocus,
+        ["WeaponArmor_Shield"] = GdItemType.Shield,
+        ["WeaponMelee_Sword"] = GdItemType.WeaponOneHandedSword,
+        ["WeaponMelee_Mace"] = GdItemType.WeaponOneHandedMace,
+        ["WeaponMelee_Axe"] = GdItemType.WeaponOneHandedAxe,
+        ["WeaponHunting_Ranged1h"] = GdItemType.WeaponOneHandedGun,
+        ["WeaponMelee_Scepter"] = GdItemType.WeaponScepter,
+        ["WeaponMelee_Dagger"] = GdItemType.WeaponDagger,
+        ["WeaponMelee_Sword2h"] = GdItemType.WeaponTwoHandedSword,
+        ["WeaponMelee_Mace2h"] = GdItemType.WeaponTwoHandedMace,
+        ["WeaponMelee_Axe2h"] = GdItemType.WeaponTwoHandedAxe,
+        ["WeaponHunting_Ranged2h"] = GdItemType.WeaponTwoHandedGun,
+    };
+
+    public async Task<IList<GdItem>> GetItemsAsync()
+    {
+        await arz.EnsureLoadedAsync();
+
+        var items = new ConcurrentBag<GdItem>();
+        await Parallel.ForEachAsync(arz.GetDbrData(DbrFileRecordsItemsRegex()), async (dbr, ct) =>
+        {
+            if (!dbr.TryGetStringValue("Class", out var classDbr) || !itemTypeMapping.TryGetValue(classDbr, out var itemType))
+                return;
+
+            if (!dbr.TryGetStringValue("itemNameTag", out var itemTagNameDbr) || arz.GetTag(itemTagNameDbr) is not { } name)
+                if (dbr.TryGetStringValue("itemSkillName", out var itemSkillNameDbr))
+                {
+                    var itemDbr = NavigateSkillToLeafSkill(arz.GetDbrData(itemSkillNameDbr)!, out _, out _);
+                    name = arz.GetTag(itemDbr!.GetStringValue("skillDisplayName"))!;
+                }
+                else
+                    return;
+
+            var item = new GdItem
+            {
+                Name = name,
+                Description = dbr.TryGetStringValue("itemText", out var tagItemText) && arz.GetTag(tagItemText) is { } description
+                    ? description : null,
+                DbrPath = dbr.Path,
+                Type = itemType,
+                BitmapPath = dbr.TryGetStringValue("bitmap", out var bitmap) ? bitmap : dbr.GetStringValue("artifactBitmap"),
+            };
+            items.Add(item);
+        });
+
+        return items.ToArray();
     }
 
     public async Task<IList<GdEquipSlot>> GetEquipSlotsAsync()
@@ -241,15 +306,15 @@ public class GdService(ArzParserService arz)
         var master = arz.GetDbrData("records/ui/character/character_mastertable.dbr")!;
         var equipSlots = Enum.GetValues<EquipSlotType>().Select(type =>
         {
-            var parser = arz.GetDbrData(master[$"equip{type}"].StringValueUnsafe)!;
+            var parser = arz.GetDbrData(master.GetStringValue($"equip{type}"))!;
             return new GdEquipSlot
             {
                 Type = type,
-                X = parser["itemX"].IntegerValueUnsafe,
-                Y = parser["itemY"].IntegerValueUnsafe,
-                Width = parser["itemXSize"].IntegerValueUnsafe,
-                Height = parser["itemYSize"].IntegerValueUnsafe,
-                SilhouetteBitmapPath = parser["silhouette"].StringValueUnsafe,
+                X = parser.GetIntegerValue("itemX"),
+                Y = parser.GetIntegerValue("itemY"),
+                Width = parser.GetIntegerValue("itemXSize"),
+                Height = parser.GetIntegerValue("itemYSize"),
+                SilhouetteBitmapPath = parser.GetStringValue("silhouette"),
             };
         }).ToArray();
 
@@ -310,6 +375,7 @@ public class GdService(ArzParserService arz)
         var expansion = version >= 2 ? reader.ReadEncUInt8(encState) : 0;
 
         GdsSkill[]? skills = default;
+        var items = new GdsItem[16];
         if (!headerOnly)
         {
             // more magic stuff
@@ -330,8 +396,10 @@ public class GdService(ArzParserService arz)
             skipNextBlock(2);
 
             // inventory
-            var equippedItems = readBlock(3, _ =>
+            items = readBlock(3, _ =>
             {
+                var items = new GdsItem[16];
+
                 magic = reader.ReadEncInt32(encState);
                 Debug.Assert(magic == 4);
 
@@ -343,16 +411,13 @@ public class GdService(ArzParserService arz)
                     var selected = reader.ReadEncInt32(encState);
 
                     while (sackCount-- > 0)
-                    {
                         // sack data
                         skipNextBlock();
-                    }
 
                     var useAlternate = reader.ReadEncUInt8(encState);
 
                     // equipment
-                    var items = new GdsItem[16];
-                    for (int i = 0; i < 12; ++i)
+                    for (var i = 0; i < 12; ++i)
                         items[i] = reader.ReadItem(true, encState);
 
                     var alternate0 = reader.ReadEncUInt8(encState);
@@ -362,11 +427,9 @@ public class GdService(ArzParserService arz)
                     var alternate1 = reader.ReadEncUInt8(encState);
                     items[14] = reader.ReadItem(true, encState);
                     items[15] = reader.ReadItem(true, encState);
-
-                    return items;
                 }
 
-                return default;
+                return items;
             });
 
             // stash
@@ -425,7 +488,7 @@ public class GdService(ArzParserService arz)
                     var autoCastSkill = reader.ReadEncString(encState);
                     var autoCastController = reader.ReadEncString(encState);
                     var itemSlot = reader.ReadEncInt32(encState);
-                    var itemId = reader.ReadEncInt32(encState);
+                    var itemId = reader.ReadEncString(encState);
 
                     return (name, autoCastSkill, autoCastController, itemSlot, itemId);
                 });
@@ -437,6 +500,9 @@ public class GdService(ArzParserService arz)
         }
 
         // build result
-        return new(charName, classIndex1, classIndex2, level, skills ?? []);
+        return new(charName, classIndex1, classIndex2, level, skills ?? [], items ?? []);
     }
+
+    [GeneratedRegex("^records/items/(?!enemygear|enchants|lootaffixes|lootchests|loreobjects|materia|questitems|transmutes)")]
+    private static partial Regex DbrFileRecordsItemsRegex();
 }

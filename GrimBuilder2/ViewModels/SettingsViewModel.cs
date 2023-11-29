@@ -51,13 +51,13 @@ public partial class SettingsViewModel : ObservableRecipient
 
             var fullPath = Path.Combine(outputPath, dbr.Path);
             Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-            await File.WriteAllTextAsync(fullPath, string.Join(Environment.NewLine, dbr.Select(kvp =>
-                $"{kvp.Key}={string.Join(",", kvp.Value.Type switch
+            await File.WriteAllTextAsync(fullPath, string.Join(Environment.NewLine, dbr.Keys.Select(key =>
+                $"{key}={string.Join(",", dbr.GetValueType(key) switch
                 {
                     DbrValueType.Integer or DbrValueType.Boolean =>
-                        kvp.Value.IntegerValues!.Select(w => w.ToString(CultureInfo.InvariantCulture)),
-                    DbrValueType.String => kvp.Value.StringValues!,
-                    DbrValueType.Single => kvp.Value.SingleValues!.Select(w => w.ToString(CultureInfo.InvariantCulture)),
+                        dbr.GetIntegerValues(key).Select(w => w.ToString(CultureInfo.InvariantCulture)),
+                    DbrValueType.String => dbr.GetStringValues(key),
+                    DbrValueType.Single => dbr.GetFloatValues(key).Select(w => w.ToString(CultureInfo.InvariantCulture)),
                     _ => throw new NotImplementedException()
                 })}")), ct).ConfigureAwait(false);
         }).ConfigureAwait(false);
