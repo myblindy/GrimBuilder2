@@ -12,7 +12,7 @@
     PrimaryButtonText="Open" PrimaryButtonCommand="{x:Bind ViewModel.OpenCommand}"
     SecondaryButtonText="Cancel"
     x:Name="RootDialog">
-
+    
     <TabView SelectedIndex="{x:Bind ViewModel.Type, Mode=TwoWay}" 
              IsAddTabButtonVisible="False">
         <TabViewItem Header="Grim Dawn" IsClosable="False">
@@ -24,7 +24,7 @@
                         <DataTemplate x:DataType="savedfile:GdsCharacter">
                             <TextBlock>
                                 <Run Text="{x:Bind Name}"/><LineBreak/>
-                                Level <Run Text="{x:Bind Level}"/> <Run Text="{x:Bind helpers:ViewBindingHelper.GetFullClassName(ClassIndex1, ClassIndex2), Mode=OneWay}"/>
+                                Level <Run Text="{x:Bind Level}"/> <Run Text="{x:Bind helpers:ViewBindingHelper.GetFullClassName(ClassIndex1, ClassIndex2)}"/>
                             </TextBlock>
                         </DataTemplate>
                     </ComboBox.ItemTemplate>

@@ -25,10 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Views\Dialogs\OpenCharacterDialog.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
@@ -56,9 +52,6 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <Page Update="Views\Dialogs\OpenCharacterDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">

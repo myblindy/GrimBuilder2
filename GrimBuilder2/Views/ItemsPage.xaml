@@ -23,7 +23,8 @@
                         </Grid.RenderTransform>
 
                         <Image helpers:TexImage.Source="{x:Bind SilhouetteBitmapPath}"/>
-                        <Image helpers:TexImage.Source="{x:Bind Item.BitmapPath, Mode=OneWay}"/>
+                        <Image helpers:TexImage.Source="{x:Bind Item.BitmapPath, Mode=OneWay}"
+                               helpers:GdToolTip.Item="{x:Bind Item, Mode=OneWay}"/>
                     </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
