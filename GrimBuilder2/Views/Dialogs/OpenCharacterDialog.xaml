@@ -12,30 +12,35 @@
     PrimaryButtonText="Open" PrimaryButtonCommand="{x:Bind ViewModel.OpenCommand}"
     SecondaryButtonText="Cancel"
     x:Name="RootDialog">
-    
+
     <TabView SelectedIndex="{x:Bind ViewModel.Type, Mode=TwoWay}" 
              IsAddTabButtonVisible="False">
         <TabViewItem Header="Grim Dawn" IsClosable="False">
-            <StackPanel Orientation="Horizontal" Margin="5">
-                <TextBlock Text="Character: " VerticalAlignment="Center" Margin="0,0,5,0"/>
-                <ComboBox PlaceholderText="Select Character" ItemsSource="{x:Bind ViewModel.Characters}"
+            <Grid Margin="15">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Character: " VerticalAlignment="Center" Margin="0,0,0,10"/>
+                <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.Characters}"
                           SelectedItem="{x:Bind ViewModel.SelectedCharacter, Mode=TwoWay}">
-                    <ComboBox.ItemTemplate>
+                    <ListView.ItemTemplate>
                         <DataTemplate x:DataType="savedfile:GdsCharacter">
                             <TextBlock>
-                                <Run Text="{x:Bind Name}"/><LineBreak/>
+                                <Run Text="{x:Bind Name}" FontWeight="Bold"/><LineBreak/>
                                 Level <Run Text="{x:Bind Level}"/> <Run Text="{x:Bind helpers:ViewBindingHelper.GetFullClassName(ClassIndex1, ClassIndex2)}"/>
                             </TextBlock>
                         </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
-            </StackPanel>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
         </TabViewItem>
         <TabViewItem Header="Grim Building" IsClosable="False">
 
         </TabViewItem>
         <TabViewItem Header="Empty Character" IsClosable="False">
-
+            <TextBlock Margin="15" Text="This creates a blank character."/>
         </TabViewItem>
     </TabView>
 </ContentDialog>

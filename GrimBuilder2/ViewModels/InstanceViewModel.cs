@@ -1,4 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using GrimBuilder2.Core.Models;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace GrimBuilder2.ViewModels;
 

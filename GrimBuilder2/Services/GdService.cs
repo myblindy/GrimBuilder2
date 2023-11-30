@@ -291,6 +291,7 @@ public partial class GdService(ArzParserService arz)
                     ? description : null,
                 DbrPath = dbr.Path,
                 Type = itemType,
+                Rarity = dbr.TryGetStringValue("itemClassification", out var itemClassification) && Enum.TryParse<GdItemRarity>(itemClassification, out var rarity) ? rarity : GdItemRarity.Broken,
                 BitmapPath = dbr.TryGetStringValue("bitmap", out var bitmap) ? bitmap : dbr.GetStringValue("artifactBitmap"),
             };
             items.Add(item);

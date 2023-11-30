@@ -6,7 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:GrimBuilder2.Models"
     xmlns:helpers="using:GrimBuilder2.Helpers"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    x:Name="RootView">
 
     <Grid x:Name="ContentArea">
         <ItemsControl ItemsSource="{x:Bind ViewModel.CommonViewModel.EquipSlots, Mode=OneWay}">
@@ -17,12 +18,14 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="models:GdAssignableEquipSlot">
-                    <Grid>
+                    <Grid Width="{x:Bind Width}" Height="{x:Bind Height}">
                         <Grid.RenderTransform>
                             <TranslateTransform X="{x:Bind X}" Y="{x:Bind Y}"/>
                         </Grid.RenderTransform>
 
                         <Image helpers:TexImage.Source="{x:Bind SilhouetteBitmapPath}"/>
+                        <Image Source="{x:Bind models:GdAssignableEquipSlot.GetRarityImageSource(Item.Rarity), Mode=OneWay}"
+                               Stretch="Fill"/>
                         <Image helpers:TexImage.Source="{x:Bind Item.BitmapPath, Mode=OneWay}"
                                helpers:GdToolTip.Item="{x:Bind Item, Mode=OneWay}"/>
                     </Grid>
