@@ -39,6 +39,9 @@ public partial class App : Application
         cfg.CreateMap<GdClass, GdAssignableClass>()
             .ForMember(nameof(GdAssignableClass.AssignableSkills), x => x.MapFrom(src => src.Skills));
         cfg.CreateMap<GdEquipSlot, GdAssignableEquipSlot>();
+
+        // clone
+        cfg.CreateMap<GdItem, GdItem>();
     }).CreateMapper();
 
     public static UIElement? AppTitlebar { get; set; }

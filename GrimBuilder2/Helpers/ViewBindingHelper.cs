@@ -20,6 +20,8 @@ static class ViewBindingHelper
 
     public static Visibility ToVisibility(object? value) => ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed;
 
+    public static Visibility ToNotVisibility(object? value) => ToNotBoolean(value) ? Visibility.Visible : Visibility.Collapsed;
+
     public static double NegativeCoordinateWorkaroundOffset => -10000;
     public static double GetNegativeCoordinateWorkaroundValue(int val) =>
         val - NegativeCoordinateWorkaroundOffset;

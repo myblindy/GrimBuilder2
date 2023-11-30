@@ -265,14 +265,36 @@ public partial class GdService(ArzParserService arz)
         ["WeaponHunting_Ranged2h"] = GdItemType.WeaponTwoHandedGun,
     };
 
-    public async Task<IList<GdItem>> GetItemsAsync()
+    public async Task<(IList<GdItem> items, IList<GdItem> prefixes, IList<GdItem> suffixes)> GetItemsAsync()
     {
         await arz.EnsureLoadedAsync();
 
         var items = new ConcurrentBag<GdItem>();
+        var prefixes = new ConcurrentBag<GdItem>();
+        var suffixes = new ConcurrentBag<GdItem>();
         await Parallel.ForEachAsync(arz.GetDbrData(DbrFileRecordsItemsRegex()), async (dbr, ct) =>
         {
-            if (!dbr.TryGetStringValue("Class", out var classDbr) || !itemTypeMapping.TryGetValue(classDbr, out var itemType))
+            if (!dbr.TryGetStringValue("Class", out var @class)) return;
+
+            // affixes
+            if (@class == "LootRandomizer" && dbr.TryGetStringValue("lootRandomizerName", out var affixNameTag))
+            {
+                var affixType = PrefixTagRegex().IsMatch(affixNameTag) ? GdItemAffixType.Prefix
+                    : SuffixTagRegex().IsMatch(affixNameTag) ? GdItemAffixType.Suffix
+                    : throw new InvalidOperationException();
+                var affix = new GdItem
+                {
+                    Name = arz.GetTag(affixNameTag)!,
+                    DbrPath = dbr.Path,
+                    Rarity = dbr.TryGetStringValue("itemClassification", out var affixItemClassification)
+                        && Enum.TryParse<GdItemRarity>(affixItemClassification, out var affixRarity) ? affixRarity : GdItemRarity.Broken,
+                };
+                (affixType is GdItemAffixType.Prefix ? prefixes : suffixes).Add(affix);
+                return;
+            }
+
+            // base items
+            if (!itemTypeMapping.TryGetValue(@class, out var itemType))
                 return;
 
             if (!dbr.TryGetStringValue("itemNameTag", out var itemTagNameDbr) || arz.GetTag(itemTagNameDbr) is not { } name)
@@ -291,13 +313,14 @@ public partial class GdService(ArzParserService arz)
                     ? description : null,
                 DbrPath = dbr.Path,
                 Type = itemType,
-                Rarity = dbr.TryGetStringValue("itemClassification", out var itemClassification) && Enum.TryParse<GdItemRarity>(itemClassification, out var rarity) ? rarity : GdItemRarity.Broken,
+                Rarity = dbr.TryGetStringValue("itemClassification", out var itemClassification)
+                    && Enum.TryParse<GdItemRarity>(itemClassification, out var rarity) ? rarity : GdItemRarity.Broken,
                 BitmapPath = dbr.TryGetStringValue("bitmap", out var bitmap) ? bitmap : dbr.GetStringValue("artifactBitmap"),
             };
             items.Add(item);
         });
 
-        return items.ToArray();
+        return (items.ToArray(), prefixes.ToArray(), suffixes.ToArray());
     }
 
     public async Task<IList<GdEquipSlot>> GetEquipSlotsAsync()
@@ -504,6 +527,12 @@ public partial class GdService(ArzParserService arz)
         return new(charName, classIndex1, classIndex2, level, skills ?? [], items ?? []);
     }
 
-    [GeneratedRegex("^records/items/(?!enemygear|enchants|lootaffixes|lootchests|loreobjects|materia|questitems|transmutes)")]
+    [GeneratedRegex("^records/items/(?!enemygear|enchants|lootchests|lootaffixes|loreobjects|materia|questitems|transmutes)|^records/items/lootaffixes/(?:prefix|suffix)")]
     private static partial Regex DbrFileRecordsItemsRegex();
+
+    [GeneratedRegex("^tag.*Prefix.")]
+    private static partial Regex PrefixTagRegex();
+
+    [GeneratedRegex("^tag.*Suffix.")]
+    private static partial Regex SuffixTagRegex();
 }

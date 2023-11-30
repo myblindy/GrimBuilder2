@@ -33,49 +33,60 @@
             <TextBlock Grid.Column="3" x:Name="AppTitleBarText" VerticalAlignment="Center" HorizontalAlignment="Center"
                        TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}"/>
         </Grid>
-        <NavigationView x:Name="NavigationViewControl" Canvas.ZIndex="0" IsBackButtonVisible="Collapsed" SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
-                        IsSettingsVisible="True" ExpandedModeThresholdWidth="1280" DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
-                        Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
-            <NavigationView.MenuItems>
-                <NavigationViewItem x:Uid="Shell_Items" helpers:NavigationHelper.NavigateTo="GrimBuilder2.ViewModels.ItemsViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE779;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Masteries" helpers:NavigationHelper.NavigateTo="GrimBuilder2.ViewModels.MasteriesViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7BE;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Uid="Shell_Devotions" helpers:NavigationHelper.NavigateTo="GrimBuilder2.ViewModels.DevotionsViewModel">
-                    <NavigationViewItem.Icon>
-                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xED39;"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
-            <NavigationView.HeaderTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <TextBlock
+        <Grid>
+            <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Orientation="Vertical" 
+                            Visibility="{x:Bind helpers:ViewBindingHelper.ToNotVisibility(ViewModel.CommonViewModel.LoadFinished), Mode=OneWay}">
+                    <ProgressRing/>
+                    <TextBlock Text="Loading, please wait..." HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+
+            <NavigationView x:Name="NavigationViewControl" Canvas.ZIndex="0" IsBackButtonVisible="Collapsed" SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
+                            IsSettingsVisible="True" ExpandedModeThresholdWidth="1280" DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
+                            Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
+                            Visibility="{x:Bind helpers:ViewBindingHelper.ToVisibility(ViewModel.CommonViewModel.LoadFinished), Mode=OneWay}">
+                <NavigationView.MenuItems>
+                    <NavigationViewItem x:Uid="Shell_Items" helpers:NavigationHelper.NavigateTo="GrimBuilder2.ViewModels.ItemsViewModel">
+                        <NavigationViewItem.Icon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE779;"/>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem x:Uid="Shell_Masteries" helpers:NavigationHelper.NavigateTo="GrimBuilder2.ViewModels.MasteriesViewModel">
+                        <NavigationViewItem.Icon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE7BE;"/>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem x:Uid="Shell_Devotions" helpers:NavigationHelper.NavigateTo="GrimBuilder2.ViewModels.DevotionsViewModel">
+                        <NavigationViewItem.Icon>
+                            <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xED39;"/>
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationView.MenuItems>
+                <NavigationView.HeaderTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <TextBlock
                             Text="{Binding}"
                             Style="{ThemeResource TitleTextBlockStyle}" />
-                    </Grid>
-                </DataTemplate>
-            </NavigationView.HeaderTemplate>
-            <i:Interaction.Behaviors>
-                <behaviors:NavigationViewHeaderBehavior DefaultHeader="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
-                    <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <TextBlock Text="{Binding}" Style="{ThemeResource TitleTextBlockStyle}" />
-                            </Grid>
-                        </DataTemplate>
-                    </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
-                </behaviors:NavigationViewHeaderBehavior>
-            </i:Interaction.Behaviors>
-            <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
-                <controls:CustomFrameView x:Name="NavigationFrame"/>
-            </Grid>
-        </NavigationView>
+                        </Grid>
+                    </DataTemplate>
+                </NavigationView.HeaderTemplate>
+                <i:Interaction.Behaviors>
+                    <behaviors:NavigationViewHeaderBehavior DefaultHeader="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}">
+                        <behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <TextBlock Text="{Binding}" Style="{ThemeResource TitleTextBlockStyle}" />
+                                </Grid>
+                            </DataTemplate>
+                        </behaviors:NavigationViewHeaderBehavior.DefaultHeaderTemplate>
+                    </behaviors:NavigationViewHeaderBehavior>
+                </i:Interaction.Behaviors>
+                <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
+                    <controls:CustomFrameView x:Name="NavigationFrame"/>
+                </Grid>
+            </NavigationView>
+        </Grid>
     </Grid>
 </Page>

@@ -1,4 +1,5 @@
-﻿namespace GrimBuilder2.Core.Models;
+﻿
+namespace GrimBuilder2.Core.Models;
 
 public class GdItem
 {
@@ -8,6 +9,18 @@ public class GdItem
     public GdItemType Type { get; set; }
     public GdItemRarity Rarity { get; set; }
     public string? BitmapPath { get; set; }
+
+    public void AddAffix(GdItem affixItem, GdItemAffixType affixType)
+    {
+        Name = affixType switch
+        {
+            GdItemAffixType.Prefix => $"{affixItem.Name} {Name}",
+            GdItemAffixType.Suffix => $"{Name} {affixItem.Name}",
+            _ => throw new InvalidOperationException(),
+        };
+
+        Rarity = (GdItemRarity)Math.Max((int)Rarity, (int)affixItem.Rarity);
+    }
 }
 
 [Flags]
@@ -53,3 +66,5 @@ public enum GdItemRarity
     Broken, Common, Magical, Rare, Epic, Legendary, Quest,
     Artifact, ArtifactFormula, Enchantment, Relic,
 }
+
+public enum GdItemAffixType { None, Prefix, Suffix }

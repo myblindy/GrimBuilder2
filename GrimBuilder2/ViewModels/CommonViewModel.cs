@@ -33,13 +33,16 @@ public partial class CommonViewModel : ObservableRecipient
     IList<GdNebula>? nebulas;
 
     [ObservableProperty]
-    IList<GdItem>? items;
+    IList<GdItem>? items, prefixes, suffixes;
 
     [ObservableProperty]
     GdClass? selectedRawClass1, selectedRawClass2;
 
     [ObservableProperty]
     GdAssignableClass? selectedAssignableClass1, selectedAssignableClass2;
+
+    [ObservableProperty]
+    bool loadFinished;
 
     static void OnSelectedRawClass(GdClass? @class, Action<GdAssignableClass?> setter)
     {
@@ -85,7 +88,7 @@ public partial class CommonViewModel : ObservableRecipient
 
     async Task InitializeAsync()
     {
-        var (classResults, devotions, equipSlots, items) = await TaskExtended.WhenAll(
+        var (classResults, devotions, equipSlots, allItems) = await TaskExtended.WhenAll(
             Task.Run(() => gdService.GetClassesAsync()),
             Task.Run(() => gdService.GetDevotionsAsync()),
             Task.Run(() => gdService.GetEquipSlotsAsync()),
@@ -100,7 +103,9 @@ public partial class CommonViewModel : ObservableRecipient
             .ToArray();
         Nebulas = devotions.nebulas;
         EquipSlots = equipSlots.Select(App.Mapper.Map<GdAssignableEquipSlot>).ToArray();
-        Items = items;
+        (Items, Prefixes, Suffixes) = (allItems.items, allItems.prefixes, allItems.suffixes);
+
+        LoadFinished = true;
 
         await Open();
     }
@@ -153,5 +158,23 @@ public partial class CommonViewModel : ObservableRecipient
 
     public string? GetClassCombinationName(GdClass? c1, GdClass? c2) => ClassCombinations?[(c1, c2)];
 
-    GdItem? BuildItem(GdsItem savedItem) => Items!.FirstOrDefault(i => i.DbrPath == savedItem.NameFile);
+    GdItem? BuildItem(GdsItem savedItem)
+    {
+        if (Items!.FirstOrDefault(i => i.DbrPath == savedItem.NameFile) is not { } baseItem) return null;
+        var item = App.Mapper.Map<GdItem>(baseItem);
+
+        if (savedItem.PrefixFile is not null
+            && Prefixes!.FirstOrDefault(i => i.DbrPath == savedItem.PrefixFile) is { } prefixItem)
+        {
+            item.AddAffix(prefixItem, GdItemAffixType.Prefix);
+        }
+
+        if (savedItem.SuffixFile is not null
+            && Suffixes!.FirstOrDefault(i => i.DbrPath == savedItem.SuffixFile) is { } suffixItem)
+        {
+            item.AddAffix(suffixItem, GdItemAffixType.Suffix);
+        }
+
+        return item;
+    }
 }
