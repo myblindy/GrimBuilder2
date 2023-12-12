@@ -48,6 +48,7 @@
   <ItemGroup>
     <ProjectReference Include="..\GrimBuilder2.Core\GrimBuilder2.Core.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

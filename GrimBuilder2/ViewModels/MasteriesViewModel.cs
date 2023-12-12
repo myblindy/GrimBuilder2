@@ -2,7 +2,7 @@
 
 namespace GrimBuilder2.ViewModels;
 
-public partial class MasteriesViewModel(CommonViewModel commonViewModel) : ObservableRecipient
+public partial class MasteriesViewModel(InstanceViewModel instanceViewModel) : ObservableRecipient
 {
-    public CommonViewModel CommonViewModel => commonViewModel;
+    public InstanceViewModel InstanceViewModel => instanceViewModel;
 }

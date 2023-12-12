@@ -12,6 +12,7 @@ static class ViewBindingHelper
         if (value is string s) return !string.IsNullOrWhiteSpace(s);
         if (value is int i) return i != 0;
         if (value is double d) return d != 0;
+        if (value is float f) return f != 0;
 
         return true;
     }
@@ -19,6 +20,8 @@ static class ViewBindingHelper
     public static bool ToNotBoolean(object? value) => !ToBoolean(value);
 
     public static Visibility ToVisibility(object? value) => ToBoolean(value) ? Visibility.Visible : Visibility.Collapsed;
+    public static Visibility ToVisibilityAnd(object? value1, object? value2) =>
+        ToBoolean(value1) && ToBoolean(value2) ? Visibility.Visible : Visibility.Collapsed;
 
     public static Visibility ToNotVisibility(object? value) => ToNotBoolean(value) ? Visibility.Visible : Visibility.Collapsed;
 
@@ -28,10 +31,10 @@ static class ViewBindingHelper
 
     public static string? GetFullClassName(int classIndex1, int classIndex2)
     {
-        var commonViewModel = App.GetService<CommonViewModel>();
-        return commonViewModel.GetClassCombinationName(
-            commonViewModel.Classes?.FirstOrDefault(c => c.Index == classIndex1),
-            commonViewModel.Classes?.FirstOrDefault(c => c.Index == classIndex2));
+        var instanceViewModel = App.GetService<InstanceViewModel>();
+        return instanceViewModel.GetClassCombinationName(
+            instanceViewModel.Classes?.FirstOrDefault(c => c.Index == classIndex1),
+            instanceViewModel.Classes?.FirstOrDefault(c => c.Index == classIndex2));
     }
 }
 

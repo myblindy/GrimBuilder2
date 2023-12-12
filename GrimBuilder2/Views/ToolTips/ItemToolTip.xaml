@@ -6,11 +6,23 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helpers="using:GrimBuilder2.Helpers"
+    xmlns:models="using:GrimBuilder2.Core.Models"
     mc:Ignorable="d">
 
     <StackPanel Orientation="Vertical">
-        <TextBlock Text="{x:Bind Item.Name}" Margin="0,0,0,10"/>
-        <TextBlock x:Name="DescriptionTextBlock" TextWrapping="Wrap"
+        <TextBlock Text="{x:Bind Item.Name}" Style="{StaticResource GdToolTipName}" Margin="0,0,0,10"
+                   Foreground="{x:Bind helpers:GdToolTip.GetNameBrush(Item.Rarity)}"/>
+        <TextBlock x:Name="DescriptionTextBlock" Style="{StaticResource GdToolTipDescription}"
                    Visibility="{x:Bind helpers:ViewBindingHelper.ToVisibility(Item.Description)}"/>
+        <TextBlock Text="{x:Bind helpers:GdToolTip.GetDisplayItemType(Item.Type)}" Style="{StaticResource GdToolTipType}"/>
+        <TextBlock/>
+        <TextBlock Style="{StaticResource GdToolTipStat}"
+                   Visibility="{x:Bind helpers:ViewBindingHelper.ToVisibility(Item.Stats.Health)}">
+            <Run Text="{x:Bind Item.Stats.Health}" Foreground="{StaticResource GdToolTipStatValueBrush}"/> Health
+        </TextBlock>
+        <TextBlock Style="{StaticResource GdToolTipStat}"
+                   Visibility="{x:Bind helpers:ViewBindingHelper.ToVisibility(Item.Stats.HealthModifier)}">
+            <Run Text="{x:Bind Item.Stats.HealthModifier}" Foreground="{StaticResource GdToolTipStatValueBrush}"/>% Health
+        </TextBlock>
     </StackPanel>
 </Grid>

@@ -13,14 +13,15 @@ public partial class ShellViewModel : ObservableRecipient
 
     public INavigationService NavigationService { get; }
     public INavigationViewService NavigationViewService { get; }
-    public CommonViewModel CommonViewModel { get; }
+    public InstanceViewModel InstanceViewModel { get; }
 
-    public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService, CommonViewModel commonViewModel)
+    public ShellViewModel(INavigationService navigationService, INavigationViewService navigationViewService,
+        InstanceViewModel instanceViewModel)
     {
         NavigationService = navigationService;
         NavigationService.Navigated += OnNavigated;
         NavigationViewService = navigationViewService;
-        CommonViewModel = commonViewModel;
+        InstanceViewModel = instanceViewModel;
     }
 
     private void OnNavigated(object? sender, CustomFrameViewNavigatedArgs e)

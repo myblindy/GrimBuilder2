@@ -5,10 +5,10 @@ using GrimBuilder2.Services;
 
 namespace GrimBuilder2.ViewModels.Dialogs;
 
-public partial class OpenCharacterViewModel(
-    InstanceViewModel instanceViewModel, CommonViewModel commonViewModel, GdService gdService) : ObservableObject
+public partial class OpenCharacterViewModel(CharacterViewModel commonViewModel,
+    GlobalViewModel globalViewModel, GdService gdService) : ObservableObject
 {
-    public CommonViewModel CommonViewModel { get; } = commonViewModel;
+    public CharacterViewModel CharacterViewModel { get; } = commonViewModel;
 
     enum TypeKind { GrimDawn, GrimBuilding, New }
     [ObservableProperty]
@@ -16,7 +16,7 @@ public partial class OpenCharacterViewModel(
     int type;
 
     public IList<GdsCharacter> Characters { get; } =
-        gdService.GetCharacterList(instanceViewModel.GdSavePath);
+        gdService.GetCharacterList(globalViewModel.GdSavePath);
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(OpenCommand))]

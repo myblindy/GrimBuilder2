@@ -109,13 +109,19 @@ public class ArzParserService
         public readonly int StringTableOffset;
     }
 
-    public ArzParserService(InstanceViewModel instanceViewModel)
+    public ArzParserService( GlobalViewModel globalViewModel)
     {
-        arzFiles = Directory.EnumerateDirectories(instanceViewModel.GdPath, "gdx*").OrderByDescending(path => path)
-            .Append(instanceViewModel.GdPath)
+        arzFiles = Directory.EnumerateDirectories(globalViewModel.GdPath, "gdx*").OrderByDescending(path => path)
+            .Append(globalViewModel.GdPath)
             .Select(dbPath => Path.Combine(dbPath, "database"))
             .SelectMany(arzPath => Directory.EnumerateFiles(arzPath, "*.arz", SearchOption.AllDirectories))
-            .Select(arzPath => new Arz() { Path = arzPath, File = MemoryMappedFile.CreateFromFile(arzPath) })
+            .Select(arzPath => new Arz()
+            {
+                Path = arzPath,
+                File = MemoryMappedFile.CreateFromFile(
+                    File.Open(arzPath, FileMode.Open, FileAccess.Read, FileShare.Read),
+                    null, 0, MemoryMappedFileAccess.Read, HandleInheritability.None, false)
+            })
             .ToArray();
         _ = InitializeAsync();
     }
@@ -210,8 +216,10 @@ public class ArzParserService
                         // parse each arc file
                         unsafe
                         {
-                            using var mmf = MemoryMappedFile.CreateFromFile(arc);
-                            using var accessor = mmf.CreateViewAccessor();
+                            using var mmf = MemoryMappedFile.CreateFromFile(
+                                File.Open(arc, FileMode.Open, FileAccess.Read, FileShare.Read),
+                                null, 0, MemoryMappedFileAccess.Read, HandleInheritability.None, false);
+                            using var accessor = mmf.CreateViewAccessor(0, 0, MemoryMappedFileAccess.Read);
 
                             byte* ptr = default;
                             accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptr);
@@ -260,7 +268,7 @@ public class ArzParserService
                         // parse the arz
                         unsafe
                         {
-                            using var accessor = arz.File.CreateViewAccessor();
+                            using var accessor = arz.File.CreateViewAccessor(0, 0, MemoryMappedFileAccess.Read);
                             byte* ptr = default;
                             accessor.SafeMemoryMappedViewHandle.AcquirePointer(ref ptr);
 

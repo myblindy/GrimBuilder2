@@ -2,6 +2,8 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 
 namespace GrimBuilder2.Helpers;
 
@@ -58,4 +60,43 @@ static class GdToolTip
         else
             throw new InvalidOperationException();
     }
+
+    public static string GetDisplayItemType(GdItemType itemType) => itemType switch
+    {
+        GdItemType.Feet => "Feet",
+        GdItemType.Hands => "Hands",
+        GdItemType.Head => "Head",
+        GdItemType.Legs => "Legs",
+        GdItemType.Relic => "Relic",
+        GdItemType.Shoulders => "Shoulders",
+        GdItemType.Chest => "Chest",
+        GdItemType.WeaponOneHandedAxe => "One-Handed Axe",
+        GdItemType.WeaponOneHandedSword => "One-Handed Sword",
+        GdItemType.WeaponOneHandedMace => "One-Handed Mace",
+        GdItemType.WeaponOneHandedGun => "One-Handed Gun",
+        GdItemType.WeaponDagger => "Dagger",
+        GdItemType.WeaponScepter => "Scepter",
+        GdItemType.WeaponTwoHandedAxe => "Two-Handed Axe",
+        GdItemType.WeaponTwoHandedSword => "Two-Handed Sword",
+        GdItemType.WeaponTwoHandedMace => "Two-Handed Mace",
+        GdItemType.WeaponTwoHandedGun => "Two-Handed Gun",
+        GdItemType.WeaponCrossbow => "Crossbow",
+        GdItemType.OffhandFocus => "Focus",
+        GdItemType.Shield => "Shield",
+        GdItemType.Medal => "Medal",
+        GdItemType.Amulet => "Amulet",
+        GdItemType.Ring => "Ring",
+        GdItemType.Belt => "Belt",
+        _ => throw new NotImplementedException()
+    };
+
+    public static SolidColorBrush GetNameBrush(GdItemRarity rarity) => rarity switch
+    {
+        GdItemRarity.Common => new(Color.FromArgb(0xff, 0xff, 0xff, 0xff)),
+        GdItemRarity.Magical => new(Color.FromArgb(0xff, 0xf2, 0xe6, 0x1a)),
+        GdItemRarity.Rare => new(Color.FromArgb(0xff, 0x3e, 0xea, 0x4a)),
+        GdItemRarity.Epic => new(Color.FromArgb(0xff, 0x33, 0x8c, 0xce)),
+        GdItemRarity.Legendary => new(Color.FromArgb(0xff, 0xa6, 0x38, 0xff)),
+        _ => throw new NotImplementedException()
+    };
 }

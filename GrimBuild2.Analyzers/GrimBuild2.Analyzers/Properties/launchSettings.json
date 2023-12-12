@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Core Roslyn Component": {
+      "commandName": "DebugRoslynComponent",
+      "targetProject": "..\\..\\GrimBuilder2.Core\\GrimBuilder2.Core.csproj"
+    }
+  }
+}

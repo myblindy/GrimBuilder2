@@ -16,7 +16,7 @@
                 <MatrixTransform x:Name="MapMatrixTransform"/>
             </Grid.RenderTransform>
 
-            <ItemsControl ItemsSource="{x:Bind ViewModel.CommonViewModel.Nebulas}">
+            <ItemsControl ItemsSource="{x:Bind ViewModel.InstanceViewModel.Nebulas}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas/>
@@ -32,7 +32,7 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <ItemsControl ItemsSource="{x:Bind ViewModel.CommonViewModel.Constellations}" >
+            <ItemsControl ItemsSource="{x:Bind ViewModel.InstanceViewModel.Constellations}" >
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas/>
@@ -50,7 +50,7 @@
             </ItemsControl>
 
             <!-- dependency lines -->
-            <ItemsControl ItemsSource="{x:Bind ViewModel.CommonViewModel.AssignableConstellationSkills}">
+            <ItemsControl ItemsSource="{x:Bind ViewModel.InstanceViewModel.SelectedCharacter.AssignableConstellationSkills}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas>
@@ -78,7 +78,7 @@
             </ItemsControl>
 
             <!-- skills -->
-            <ItemsControl ItemsSource="{x:Bind ViewModel.CommonViewModel.AssignableConstellationSkills}">
+            <ItemsControl ItemsSource="{x:Bind ViewModel.InstanceViewModel.SelectedCharacter.AssignableConstellationSkills}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <Canvas/>

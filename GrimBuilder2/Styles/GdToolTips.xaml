@@ -1,0 +1,27 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style x:Key="GdToolTipName" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource MediumFontSize}"/>
+        <Setter Property="TextWrapping" Value="NoWrap" />
+    </Style>
+
+    <Style x:Key="GdToolTipDescription" TargetType="TextBlock">
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="Foreground" Value="#bfb08c"/>
+    </Style>
+
+    <Style x:Key="GdToolTipType" TargetType="TextBlock">
+        <Setter Property="TextWrapping" Value="NoWrap" />
+        <Setter Property="Foreground" Value="#e3ba6b"/>
+    </Style>
+
+    <Style x:Key="GdToolTipStat" TargetType="TextBlock">
+        <Setter Property="TextWrapping" Value="NoWrap"/>
+        <Setter Property="Foreground" Value="#a88054"/>
+    </Style>
+
+    <SolidColorBrush x:Key="GdToolTipStatValueBrush">#dec2a3</SolidColorBrush>
+
+</ResourceDictionary>

@@ -9,6 +9,7 @@ public class GdItem
     public GdItemType Type { get; set; }
     public GdItemRarity Rarity { get; set; }
     public string? BitmapPath { get; set; }
+    public GdStats Stats { get; } = new();
 
     public void AddAffix(GdItem affixItem, GdItemAffixType affixType)
     {
@@ -20,6 +21,8 @@ public class GdItem
         };
 
         Rarity = (GdItemRarity)Math.Max((int)Rarity, (int)affixItem.Rarity);
+
+        Stats.AddFrom(affixItem.Stats);
     }
 }
 

@@ -10,7 +10,7 @@
     x:Name="RootView">
 
     <Grid x:Name="ContentArea">
-        <ItemsControl ItemsSource="{x:Bind ViewModel.CommonViewModel.EquipSlots, Mode=OneWay}">
+        <ItemsControl ItemsSource="{x:Bind ViewModel.InstanceViewModel.SelectedCharacter.EquipSlots, Mode=OneWay}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas/>

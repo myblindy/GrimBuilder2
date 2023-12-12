@@ -4,6 +4,8 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using ReactiveUI;
+using System.Reactive.Linq;
 using Windows.Foundation;
 
 namespace GrimBuilder2.Views;
@@ -22,6 +24,12 @@ public sealed partial class ShellPage : Page
 
         AppTitleBar.Loaded += (s, e) => SetRegionsForCustomTitleBar();
         AppTitleBar.SizeChanged += (s, e) => SetRegionsForCustomTitleBar();
+        this.WhenAnyValue(x => x.ViewModel.InstanceViewModel.Characters.Count).ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(async _ =>
+            {
+                await Task.Yield(); // wait for the UI to update
+                SetRegionsForCustomTitleBar();
+            });
 
         App.MainWindow.ExtendsContentIntoTitleBar = true;
         App.MainWindow.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
@@ -32,14 +40,16 @@ public sealed partial class ShellPage : Page
 
     void SetRegionsForCustomTitleBar()
     {
+        if (AppTitleBar.XamlRoot is null) return;
+
         // Specify the interactive regions of the title bar.
         double scaleAdjustment = AppTitleBar.XamlRoot.RasterizationScale;
 
         RightPaddingColumn.Width = new GridLength(App.MainWindow.AppWindow.TitleBar.RightInset / scaleAdjustment);
         LeftPaddingColumn.Width = new GridLength(App.MainWindow.AppWindow.TitleBar.LeftInset / scaleAdjustment);
 
-        var transform = TitleBarToolBar.TransformToVisual(null);
-        var bounds = transform.TransformBounds(new(0, 0, TitleBarToolBar.ActualWidth, TitleBarToolBar.ActualHeight));
+        var transform = CharacterTabs.TransformToVisual(null);
+        var bounds = transform.TransformBounds(new(0, 0, CharacterTabs.ActualWidth, CharacterTabs.ActualHeight));
         var toolBarRect = GetRect(bounds, scaleAdjustment);
 
         var nonClientInputSrc = InputNonClientPointerSource.GetForWindowId(App.MainWindow.AppWindow.Id);
@@ -69,5 +79,10 @@ public sealed partial class ShellPage : Page
             Right = AppTitleBar.Margin.Right,
             Bottom = AppTitleBar.Margin.Bottom
         };
+    }
+
+    private void CharacterTabs_TabCloseRequested(TabView sender, TabViewTabCloseRequestedEventArgs args)
+    {
+        ViewModel.InstanceViewModel.Characters.Remove((CharacterViewModel)args.Tab.DataContext);
     }
 }

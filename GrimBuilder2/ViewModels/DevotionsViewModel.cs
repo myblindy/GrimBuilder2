@@ -2,7 +2,7 @@
 
 namespace GrimBuilder2.ViewModels;
 
-public partial class DevotionsViewModel(CommonViewModel commonViewModel) : ObservableRecipient
+public partial class DevotionsViewModel(InstanceViewModel instanceViewModel) : ObservableRecipient
 {
-    public CommonViewModel CommonViewModel => commonViewModel;
+    public InstanceViewModel InstanceViewModel => instanceViewModel;
 }

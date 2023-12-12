@@ -15,4 +15,11 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Nito.AsyncEx.Coordination" Version="5.1.2" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GrimBuild2.Analyzers\GrimBuild2.Analyzers\GrimBuilder2.Analyzers.csproj"
+                      PrivateAssets="all"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="Analyzer"/>
+  </ItemGroup>
 </Project>

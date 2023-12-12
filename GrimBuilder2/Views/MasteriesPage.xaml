@@ -14,24 +14,24 @@
             <TabViewItem IsClosable="False">
                 <TabViewItem.HeaderTemplate>
                     <DataTemplate x:DataType="viewmodels:MasteriesViewModel">
-                        <ComboBox ItemsSource="{x:Bind CommonViewModel.Classes, Mode=OneWay}" 
-                                  SelectedValue="{x:Bind CommonViewModel.SelectedRawClass1, Mode=TwoWay}"
+                        <ComboBox ItemsSource="{x:Bind InstanceViewModel.Classes, Mode=OneWay}" 
+                                  SelectedValue="{x:Bind InstanceViewModel.SelectedCharacter.SelectedRawClass1, Mode=TwoWay}"
                                   PlaceholderText="Select Class" DisplayMemberPath="Name"/>
                     </DataTemplate>
                 </TabViewItem.HeaderTemplate>
 
-                <controls:SkillsControlView Class="{x:Bind ViewModel.CommonViewModel.SelectedAssignableClass1, Mode=OneWay}"/>
+                <controls:SkillsControlView Class="{x:Bind ViewModel.InstanceViewModel.SelectedCharacter.SelectedAssignableClass1, Mode=OneWay}"/>
             </TabViewItem>
             <TabViewItem IsClosable="False">
                 <TabViewItem.HeaderTemplate>
                     <DataTemplate x:DataType="viewmodels:MasteriesViewModel">
-                        <ComboBox ItemsSource="{x:Bind CommonViewModel.Classes, Mode=OneWay}" 
-                                  SelectedValue="{x:Bind CommonViewModel.SelectedRawClass2, Mode=TwoWay}"
+                        <ComboBox ItemsSource="{x:Bind InstanceViewModel.Classes, Mode=OneWay}" 
+                                  SelectedValue="{x:Bind InstanceViewModel.SelectedCharacter.SelectedRawClass2, Mode=TwoWay}"
                                   PlaceholderText="Select Class" DisplayMemberPath="Name"/>
                     </DataTemplate>
                 </TabViewItem.HeaderTemplate>
 
-                <controls:SkillsControlView Class="{x:Bind ViewModel.CommonViewModel.SelectedAssignableClass2, Mode=OneWay}"/>
+                <controls:SkillsControlView Class="{x:Bind ViewModel.InstanceViewModel.SelectedCharacter.SelectedAssignableClass2, Mode=OneWay}"/>
             </TabViewItem>
         </TabView>
     </Grid>

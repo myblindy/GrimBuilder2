@@ -21,6 +21,8 @@ namespace GrimBuilder2;
 public partial class App : Application
 {
     public IHost Host { get; }
+    public static WindowEx MainWindow { get; } = new MainWindow();
+    public static DispatcherQueue MainDispatcherQueue { get; } = DispatcherQueue.GetForCurrentThread();
 
     public static T GetService<T>() where T : class
     {
@@ -30,10 +32,7 @@ public partial class App : Application
         return service;
     }
 
-    public static WindowEx MainWindow { get; } = new MainWindow();
-    public static DispatcherQueue MainDispatcherQueue { get; } = DispatcherQueue.GetForCurrentThread();
-
-    public static readonly IMapper Mapper = new MapperConfiguration(cfg =>
+    public static IMapper Mapper { get; } = new MapperConfiguration(cfg =>
     {
         cfg.CreateMap<GdSkill, GdAssignableSkill>();
         cfg.CreateMap<GdClass, GdAssignableClass>()
@@ -42,6 +41,7 @@ public partial class App : Application
 
         // clone
         cfg.CreateMap<GdItem, GdItem>();
+        cfg.CreateMap<GdStats, GdStats>();
     }).CreateMapper();
 
     public static UIElement? AppTitlebar { get; set; }
@@ -77,8 +77,9 @@ public partial class App : Application
                 services.AddSingleton<GdService>();
 
                 // Views and ViewModels
+                services.AddSingleton<GlobalViewModel>();
                 services.AddSingleton<InstanceViewModel>();
-                services.AddSingleton<CommonViewModel>();
+                services.AddTransient<CharacterViewModel>();
                 services.AddSingleton<SettingsViewModel>();
                 services.AddSingleton<SettingsPage>();
                 services.AddSingleton<MasteriesViewModel>();

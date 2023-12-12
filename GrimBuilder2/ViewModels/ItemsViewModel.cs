@@ -2,7 +2,7 @@
 
 namespace GrimBuilder2.ViewModels;
 
-public partial class ItemsViewModel(CommonViewModel commonViewModel) : ObservableRecipient
+public partial class ItemsViewModel(InstanceViewModel instanceViewModel) : ObservableRecipient
 {
-    public CommonViewModel CommonViewModel => commonViewModel;
+    public InstanceViewModel InstanceViewModel => instanceViewModel;
 }

@@ -1,5 +1,4 @@
 ﻿using System.Buffers.Binary;
-using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 
 namespace GrimBuilder2.Core.Models;
@@ -103,6 +102,23 @@ public class DbrData
         }
 
         values = [];
+        return false;
+    }
+
+    public float GetFloatValue(string key) =>
+        TryGetFloatValue(key, out var value) ? value : throw new InvalidOperationException();
+
+    public float GetFloatValueOrDefault(string key, float defaultValue = 0) =>
+        TryGetFloatValue(key, out var value) ? value : defaultValue;
+
+    public bool TryGetFloatValue(string key, out float value)
+    {
+        if (entries.TryGetValue(key, out var entry) && entry.type == DbrValueType.Single)
+        {
+            value = BinaryPrimitives.ReadSingleLittleEndian(data.AsSpan(entry.offset));
+            return true;
+        }
+        value = default;
         return false;
     }
 

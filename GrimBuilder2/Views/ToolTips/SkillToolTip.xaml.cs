@@ -1,10 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using GrimBuilder2.Core.Models;
-using Microsoft.UI.Xaml.Documents;
-using System.Text;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI;
 using GrimBuilder2.Helpers;
 
 namespace GrimBuilder2.Views.ToolTips;

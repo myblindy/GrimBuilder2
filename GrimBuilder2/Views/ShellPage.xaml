@@ -6,7 +6,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:helpers="using:GrimBuilder2.Helpers"
     xmlns:behaviors="using:GrimBuilder2.Behaviors"
-    xmlns:i="using:Microsoft.Xaml.Interactivity" xmlns:controls="using:GrimBuilder2.Views.Controls"
+    xmlns:i="using:Microsoft.Xaml.Interactivity" 
+    xmlns:controls="using:GrimBuilder2.Views.Controls" 
+    xmlns:viewmodels="using:GrimBuilder2.ViewModels"
     Loaded="OnLoaded">
 
     <Grid>
@@ -14,29 +16,37 @@
               Height="{Binding ElementName=NavigationViewControl, Path=CompactPaneLength}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="LeftPaddingColumn" Width="0"/>
-                <ColumnDefinition x:Name="ToolbarColumn" Width="auto"/>
+                <ColumnDefinition x:Name="IconColumn" Width="auto"/>
+                <ColumnDefinition x:Name="TabsColumn" Width="auto"/>
                 <ColumnDefinition x:Name="LeftDragColumn" Width="*"/>
                 <ColumnDefinition x:Name="TitleColumn" Width="auto"/>
                 <ColumnDefinition x:Name="RightDragColumn" Width="*"/>
                 <ColumnDefinition x:Name="RightPaddingColumn" Width="0"/>
             </Grid.ColumnDefinitions>
 
-            <CommandBar x:Name="TitleBarToolBar" Grid.Column="1" VerticalAlignment="Center" DefaultLabelPosition="Right" OverflowButtonVisibility="Collapsed">
-                <AppBarButton ToolTipService.ToolTip="Open or Create a New Character" Label="Open"
-                              Command="{x:Bind ViewModel.CommonViewModel.OpenCommand}">
-                    <AppBarButton.Icon>
-                        <ImageIcon Source="/Assets/open-folder.png"/>
-                    </AppBarButton.Icon>
-                </AppBarButton>
-            </CommandBar>
+            <Image Grid.Column="1" Source="/Assets/WindowIcon.png"
+                   Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
-            <TextBlock Grid.Column="3" x:Name="AppTitleBarText" VerticalAlignment="Center" HorizontalAlignment="Center"
+            <TabView x:Name="CharacterTabs" Grid.Column="2" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                     TabItemsSource="{x:Bind ViewModel.InstanceViewModel.Characters}" 
+                     SelectedItem="{x:Bind ViewModel.InstanceViewModel.SelectedCharacter, Mode=TwoWay}"
+                     AddTabButtonCommand="{x:Bind ViewModel.InstanceViewModel.OpenCommand}"
+                     TabCloseRequested="CharacterTabs_TabCloseRequested">
+                <TabView.TabItemTemplate>
+                    <DataTemplate>
+                        <TabViewItem Header="{Binding Name}"/>
+                    </DataTemplate>
+                </TabView.TabItemTemplate>
+            </TabView>
+
+            <TextBlock Grid.Column="4" x:Name="AppTitleBarText" VerticalAlignment="Center" HorizontalAlignment="Center"
                        TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}"/>
         </Grid>
+
         <Grid>
             <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Orientation="Vertical" 
-                            Visibility="{x:Bind helpers:ViewBindingHelper.ToNotVisibility(ViewModel.CommonViewModel.LoadFinished), Mode=OneWay}">
+                            Visibility="{x:Bind helpers:ViewBindingHelper.ToNotVisibility(ViewModel.InstanceViewModel.LoadFinished), Mode=OneWay}">
                     <ProgressRing/>
                     <TextBlock Text="Loading, please wait..." HorizontalAlignment="Center"/>
                 </StackPanel>
@@ -45,7 +55,7 @@
             <NavigationView x:Name="NavigationViewControl" Canvas.ZIndex="0" IsBackButtonVisible="Collapsed" SelectedItem="{x:Bind ViewModel.Selected, Mode=OneWay}"
                             IsSettingsVisible="True" ExpandedModeThresholdWidth="1280" DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
                             Header="{x:Bind ((ContentControl)ViewModel.Selected).Content, Mode=OneWay}"
-                            Visibility="{x:Bind helpers:ViewBindingHelper.ToVisibility(ViewModel.CommonViewModel.LoadFinished), Mode=OneWay}">
+                            Visibility="{x:Bind helpers:ViewBindingHelper.ToVisibilityAnd(ViewModel.InstanceViewModel.LoadFinished, ViewModel.InstanceViewModel.Characters.Count), Mode=OneWay}">
                 <NavigationView.MenuItems>
                     <NavigationViewItem x:Uid="Shell_Items" helpers:NavigationHelper.NavigateTo="GrimBuilder2.ViewModels.ItemsViewModel">
                         <NavigationViewItem.Icon>

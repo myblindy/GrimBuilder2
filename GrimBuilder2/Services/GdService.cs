@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
 
 namespace GrimBuilder2.Services;
 
@@ -36,6 +35,12 @@ public partial class GdService(ArzParserService arz)
             }
         } while (changed);
         return dbr;
+    }
+
+    void ReadStats(GdStats stats, DbrData dbr)
+    {
+        stats.Health = dbr.GetFloatValueOrDefault("characterLife");
+        stats.HealthModifier = dbr.GetFloatValueOrDefault("characterLifeModifier");
     }
 
     [Flags]
@@ -289,6 +294,7 @@ public partial class GdService(ArzParserService arz)
                     Rarity = dbr.TryGetStringValue("itemClassification", out var affixItemClassification)
                         && Enum.TryParse<GdItemRarity>(affixItemClassification, out var affixRarity) ? affixRarity : GdItemRarity.Broken,
                 };
+                ReadStats(affix.Stats, dbr);
                 (affixType is GdItemAffixType.Prefix ? prefixes : suffixes).Add(affix);
                 return;
             }
@@ -317,6 +323,7 @@ public partial class GdService(ArzParserService arz)
                     && Enum.TryParse<GdItemRarity>(itemClassification, out var rarity) ? rarity : GdItemRarity.Broken,
                 BitmapPath = dbr.TryGetStringValue("bitmap", out var bitmap) ? bitmap : dbr.GetStringValue("artifactBitmap"),
             };
+            ReadStats(item.Stats, dbr);
             items.Add(item);
         });
 
@@ -348,6 +355,7 @@ public partial class GdService(ArzParserService arz)
     public IList<GdsCharacter> GetCharacterList(string gdPath, bool headerOnly = false) =>
         Directory.EnumerateFiles(gdPath, "player.gdc", SearchOption.AllDirectories)
             .Select(path => ParseSaveFile(Path.GetDirectoryName(path)!, headerOnly))
+            .OrderBy(x => x.Name)
             .ToList();
 
     public GdsCharacter ParseSaveFile(string baseFolderPath, bool headerOnly = false)
