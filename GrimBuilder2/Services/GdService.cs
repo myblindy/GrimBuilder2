@@ -41,6 +41,52 @@ public partial class GdService(ArzParserService arz)
     {
         stats.Health = dbr.GetFloatValueOrDefault("characterLife");
         stats.HealthModifier = dbr.GetFloatValueOrDefault("characterLifeModifier");
+        stats.HealthRegen = dbr.GetFloatValueOrDefault("characterLifeRegen");
+        stats.HealthRegenModifier = dbr.GetFloatValueOrDefault("characterLifeRegenModifier");
+        stats.Energy = dbr.GetFloatValueOrDefault("characterMana");
+        stats.EnergyModifier = dbr.GetFloatValueOrDefault("characterManaModifier");
+        stats.EnergyRegen = dbr.GetFloatValueOrDefault("characterManaRegen");
+        stats.EnergyRegenModifier = dbr.GetFloatValueOrDefault("characterManaRegenModifier");
+        stats.Physique = dbr.GetFloatValueOrDefault("characterStrength");
+        stats.PhysiqueModifier = dbr.GetFloatValueOrDefault("characterStrengthModifier");
+        stats.Cunning = dbr.GetFloatValueOrDefault("characterDexterity");
+        stats.CunningModifier = dbr.GetFloatValueOrDefault("characterDexterityModifier");
+        stats.Spirit = dbr.GetFloatValueOrDefault("characterIntelligence");
+        stats.SpiritModifier = dbr.GetFloatValueOrDefault("characterIntelligenceModifier");
+
+        stats.Armor = dbr.GetFloatValueOrDefault("defensiveProtection");
+        stats.ArmorModifier = dbr.GetFloatValueOrDefault("defensiveProtectionModifier");
+        stats.ArmorAbsorptionModifier = dbr.GetFloatValueOrDefault("defensiveAbsorptionModifier");
+
+        stats.ResistBleed = dbr.GetFloatValueOrDefault("defensiveBleeding");
+        stats.MaxResistBleed = dbr.GetFloatValueOrDefault("defensiveBleedingMaxResist");
+        stats.ResistFire = dbr.GetFloatValueOrDefault("defensiveFire");
+        stats.MaxResistFire = dbr.GetFloatValueOrDefault("defensiveFireMaxResist");
+        stats.ResistCold = dbr.GetFloatValueOrDefault("defensiveCold");
+        stats.MaxResistCold = dbr.GetFloatValueOrDefault("defensiveColdMaxResist");
+        stats.ResistLightning = dbr.GetFloatValueOrDefault("defensiveLightning");
+        stats.MaxResistLightning = dbr.GetFloatValueOrDefault("defensiveLightningMaxResist");
+        stats.ResistAether = dbr.GetFloatValueOrDefault("defensiveAether");
+        stats.MaxResistAether = dbr.GetFloatValueOrDefault("defensiveAetherMaxResist");
+        stats.ResistChaos = dbr.GetFloatValueOrDefault("defensiveChaos");
+        stats.MaxResistChaos = dbr.GetFloatValueOrDefault("defensiveChaosMaxResist");
+        stats.ResistElemental = dbr.GetFloatValueOrDefault("defensiveElemental");
+        stats.ResistKnockdown = dbr.GetFloatValueOrDefault("defensiveKnockdown");
+        stats.MaxResistKnockdown = dbr.GetFloatValueOrDefault("defensiveKnockdownMaxResist");
+        stats.ResistVitality = dbr.GetFloatValueOrDefault("defensiveLife");
+        stats.MaxResistVitality = dbr.GetFloatValueOrDefault("defensiveLifeMaxResist");
+        stats.ResistStun = dbr.GetFloatValueOrDefault("defensiveStun");
+        stats.MaxResistStun = dbr.GetFloatValueOrDefault("defensiveStunMaxResist");
+        stats.ResistSlow = dbr.GetFloatValueOrDefault("defensiveTotalSpeedResistance");
+        stats.MaxResistSlow = dbr.GetFloatValueOrDefault("defensiveTotalSpeedResistanceMaxResist");
+        stats.ResistPhysical = dbr.GetFloatValueOrDefault("defensivePhysical");
+        stats.MaxResistPhysical = dbr.GetFloatValueOrDefault("defensivePhysicalMaxResist");
+        stats.ResistPierce = dbr.GetFloatValueOrDefault("defensivePierce");
+        stats.MaxResistPierce = dbr.GetFloatValueOrDefault("defensivePierceMaxResist");
+        stats.ResistPoison = dbr.GetFloatValueOrDefault("defensivePoison");
+        stats.MaxResistPoison = dbr.GetFloatValueOrDefault("defensivePoisonMaxResist");
+        stats.ResistDisruption = dbr.GetFloatValueOrDefault("defensiveDisruption");
+        stats.MaxResistDisruption = dbr.GetFloatValueOrDefault("defensiveDisruptionMaxResist");
     }
 
     [Flags]
