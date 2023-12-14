@@ -12,14 +12,12 @@
 
   <ItemGroup>
     <PackageReference Include="K4os.Compression.LZ4" Version="1.3.7-beta" />
+    <PackageReference Include="MB.System.Range" Version="1.1.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Nito.AsyncEx.Coordination" Version="5.1.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GrimBuild2.Analyzers\GrimBuild2.Analyzers\GrimBuilder2.Analyzers.csproj"
-                      PrivateAssets="all"
-                      ReferenceOutputAssembly="false"
-                      OutputItemType="Analyzer"/>
+    <ProjectReference Include="..\GrimBuild2.Analyzers\GrimBuild2.Analyzers\GrimBuilder2.Analyzers.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
   </ItemGroup>
 </Project>

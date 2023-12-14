@@ -37,58 +37,6 @@ public partial class GdService(ArzParserService arz)
         return dbr;
     }
 
-    void ReadStats(GdStats stats, DbrData dbr)
-    {
-        stats.Health = dbr.GetFloatValueOrDefault("characterLife");
-        stats.HealthModifier = dbr.GetFloatValueOrDefault("characterLifeModifier");
-        stats.HealthRegen = dbr.GetFloatValueOrDefault("characterLifeRegen");
-        stats.HealthRegenModifier = dbr.GetFloatValueOrDefault("characterLifeRegenModifier");
-        stats.Energy = dbr.GetFloatValueOrDefault("characterMana");
-        stats.EnergyModifier = dbr.GetFloatValueOrDefault("characterManaModifier");
-        stats.EnergyRegen = dbr.GetFloatValueOrDefault("characterManaRegen");
-        stats.EnergyRegenModifier = dbr.GetFloatValueOrDefault("characterManaRegenModifier");
-        stats.Physique = dbr.GetFloatValueOrDefault("characterStrength");
-        stats.PhysiqueModifier = dbr.GetFloatValueOrDefault("characterStrengthModifier");
-        stats.Cunning = dbr.GetFloatValueOrDefault("characterDexterity");
-        stats.CunningModifier = dbr.GetFloatValueOrDefault("characterDexterityModifier");
-        stats.Spirit = dbr.GetFloatValueOrDefault("characterIntelligence");
-        stats.SpiritModifier = dbr.GetFloatValueOrDefault("characterIntelligenceModifier");
-
-        stats.Armor = dbr.GetFloatValueOrDefault("defensiveProtection");
-        stats.ArmorModifier = dbr.GetFloatValueOrDefault("defensiveProtectionModifier");
-        stats.ArmorAbsorptionModifier = dbr.GetFloatValueOrDefault("defensiveAbsorptionModifier");
-
-        stats.ResistBleed = dbr.GetFloatValueOrDefault("defensiveBleeding");
-        stats.MaxResistBleed = dbr.GetFloatValueOrDefault("defensiveBleedingMaxResist");
-        stats.ResistFire = dbr.GetFloatValueOrDefault("defensiveFire");
-        stats.MaxResistFire = dbr.GetFloatValueOrDefault("defensiveFireMaxResist");
-        stats.ResistCold = dbr.GetFloatValueOrDefault("defensiveCold");
-        stats.MaxResistCold = dbr.GetFloatValueOrDefault("defensiveColdMaxResist");
-        stats.ResistLightning = dbr.GetFloatValueOrDefault("defensiveLightning");
-        stats.MaxResistLightning = dbr.GetFloatValueOrDefault("defensiveLightningMaxResist");
-        stats.ResistAether = dbr.GetFloatValueOrDefault("defensiveAether");
-        stats.MaxResistAether = dbr.GetFloatValueOrDefault("defensiveAetherMaxResist");
-        stats.ResistChaos = dbr.GetFloatValueOrDefault("defensiveChaos");
-        stats.MaxResistChaos = dbr.GetFloatValueOrDefault("defensiveChaosMaxResist");
-        stats.ResistElemental = dbr.GetFloatValueOrDefault("defensiveElemental");
-        stats.ResistKnockdown = dbr.GetFloatValueOrDefault("defensiveKnockdown");
-        stats.MaxResistKnockdown = dbr.GetFloatValueOrDefault("defensiveKnockdownMaxResist");
-        stats.ResistVitality = dbr.GetFloatValueOrDefault("defensiveLife");
-        stats.MaxResistVitality = dbr.GetFloatValueOrDefault("defensiveLifeMaxResist");
-        stats.ResistStun = dbr.GetFloatValueOrDefault("defensiveStun");
-        stats.MaxResistStun = dbr.GetFloatValueOrDefault("defensiveStunMaxResist");
-        stats.ResistSlow = dbr.GetFloatValueOrDefault("defensiveTotalSpeedResistance");
-        stats.MaxResistSlow = dbr.GetFloatValueOrDefault("defensiveTotalSpeedResistanceMaxResist");
-        stats.ResistPhysical = dbr.GetFloatValueOrDefault("defensivePhysical");
-        stats.MaxResistPhysical = dbr.GetFloatValueOrDefault("defensivePhysicalMaxResist");
-        stats.ResistPierce = dbr.GetFloatValueOrDefault("defensivePierce");
-        stats.MaxResistPierce = dbr.GetFloatValueOrDefault("defensivePierceMaxResist");
-        stats.ResistPoison = dbr.GetFloatValueOrDefault("defensivePoison");
-        stats.MaxResistPoison = dbr.GetFloatValueOrDefault("defensivePoisonMaxResist");
-        stats.ResistDisruption = dbr.GetFloatValueOrDefault("defensiveDisruption");
-        stats.MaxResistDisruption = dbr.GetFloatValueOrDefault("defensiveDisruptionMaxResist");
-    }
-
     [Flags]
     enum GdSkillConnectorTypes { None, Forward = 1, Up = 2, Down = 4 }
 
@@ -340,7 +288,7 @@ public partial class GdService(ArzParserService arz)
                     Rarity = dbr.TryGetStringValue("itemClassification", out var affixItemClassification)
                         && Enum.TryParse<GdItemRarity>(affixItemClassification, out var affixRarity) ? affixRarity : GdItemRarity.Broken,
                 };
-                ReadStats(affix.Stats, dbr);
+                affix.Stats.Read(dbr);
                 (affixType is GdItemAffixType.Prefix ? prefixes : suffixes).Add(affix);
                 return;
             }
@@ -369,7 +317,7 @@ public partial class GdService(ArzParserService arz)
                     && Enum.TryParse<GdItemRarity>(itemClassification, out var rarity) ? rarity : GdItemRarity.Broken,
                 BitmapPath = dbr.TryGetStringValue("bitmap", out var bitmap) ? bitmap : dbr.GetStringValue("artifactBitmap"),
             };
-            ReadStats(item.Stats, dbr);
+            item.Stats.Read(dbr);
             items.Add(item);
         });
 
