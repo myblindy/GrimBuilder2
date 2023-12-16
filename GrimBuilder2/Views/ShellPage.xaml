@@ -9,6 +9,7 @@
     xmlns:i="using:Microsoft.Xaml.Interactivity" 
     xmlns:controls="using:GrimBuilder2.Views.Controls" 
     xmlns:viewmodels="using:GrimBuilder2.ViewModels"
+    xmlns:system="using:System"
     Loaded="OnLoaded">
 
     <Grid>
@@ -76,9 +77,7 @@
                 <NavigationView.HeaderTemplate>
                     <DataTemplate>
                         <Grid>
-                            <TextBlock
-                            Text="{Binding}"
-                            Style="{ThemeResource TitleTextBlockStyle}" />
+                            <TextBlock Text="{Binding}" Style="{ThemeResource TitleTextBlockStyle}" />
                         </Grid>
                     </DataTemplate>
                 </NavigationView.HeaderTemplate>
@@ -94,7 +93,35 @@
                     </behaviors:NavigationViewHeaderBehavior>
                 </i:Interaction.Behaviors>
                 <Grid Margin="{StaticResource NavigationViewPageContentMargin}">
-                    <controls:CustomFrameView x:Name="NavigationFrame"/>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <controls:CustomFrameView Grid.Column="0" x:Name="NavigationFrame"/>
+
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Stats:"/>
+
+                        <ScrollView Grid.Row="1">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock>
+                                    <Run Text="Physique: "/><Run Text="{x:Bind system:MathF.Round(ViewModel.InstanceViewModel.SelectedCharacter.StatsSummary.Physique), Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Cunning: "/><Run Text="{x:Bind system:MathF.Round(ViewModel.InstanceViewModel.SelectedCharacter.StatsSummary.Cunning), Mode=OneWay}"/>
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Spirit: "/><Run Text="{x:Bind system:MathF.Round(ViewModel.InstanceViewModel.SelectedCharacter.StatsSummary.Spirit), Mode=OneWay}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </ScrollView>
+                    </Grid>
                 </Grid>
             </NavigationView>
         </Grid>

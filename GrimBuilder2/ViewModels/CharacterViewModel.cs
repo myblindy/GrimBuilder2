@@ -1,19 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using GrimBuilder2.Core.Helpers;
 using GrimBuilder2.Core.Models;
-using GrimBuilder2.Core.Models.SavedFile;
 using GrimBuilder2.Models;
-using GrimBuilder2.Services;
 using Nito.AsyncEx;
 using ReactiveUI;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
 
 namespace GrimBuilder2.ViewModels;
 
 public partial class CharacterViewModel : ObservableRecipient
 {
-    private readonly GdService gdService;
-    private readonly DialogService dialogService;
     private readonly InstanceViewModel instanceViewModel;
 
     [ObservableProperty]
@@ -34,6 +30,9 @@ public partial class CharacterViewModel : ObservableRecipient
     [ObservableProperty]
     bool loadFinished;
     public AsyncManualResetEvent LoadFinishedEvent { get; } = new();
+
+    [ObservableProperty]
+    GdStatsSummary? statsSummary;
 
     static void OnSelectedRawClass(GdClass? @class, Action<GdAssignableClass?> setter)
     {
@@ -69,10 +68,8 @@ public partial class CharacterViewModel : ObservableRecipient
     partial void OnSelectedRawClass2Changed(GdClass? value) =>
         OnSelectedRawClass(value, x => SelectedAssignableClass2 = x);
 
-    public CharacterViewModel(GdService gdService, DialogService dialogService, InstanceViewModel instanceViewModel)
+    public CharacterViewModel(InstanceViewModel instanceViewModel)
     {
-        this.gdService = gdService;
-        this.dialogService = dialogService;
         this.instanceViewModel = instanceViewModel;
 
         _ = InitializeAsync();
@@ -90,5 +87,12 @@ public partial class CharacterViewModel : ObservableRecipient
 
         LoadFinished = true;
         LoadFinishedEvent.Set();
+
+        Observable.Merge(EquipSlots.Select(eqs => eqs.WhenAnyValue(w => w.Item)))
+            .Throttle(TimeSpan.FromSeconds(0.3))
+            .Subscribe(_ => ComputeStatsSummary(RxApp.MainThreadScheduler));
     }
+
+    void ComputeStatsSummary(IScheduler scheduler) =>
+        scheduler.ScheduleAsync(async (s, ct) => StatsSummary = await Task.Run(() => new GdStatsSummary(this)));
 }
